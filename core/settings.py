@@ -3,7 +3,7 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-sta
+# Quick-start
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 from decouple import config
