@@ -10,15 +10,8 @@ from decouple import config
 
 SECRET_KEY = config('SECRET_KEY', default='hjg^&%**%%^*GHVGJHGKJGKH')
 DEBUG = config('DEBUG', default=False, cast=bool)
-<<<<<<< HEAD
-ALLOWED_HOSTS = [
-  'localhost',
-  '127.0.0.1',
-  '111.222.333.444',
-  'mywebsite.example']
-=======
+
 ALLOWED_HOSTS = ['*']
->>>>>>> 5c60242a5c8fa619b525bdaa788e1cbcffa8f46b
 
 # Application definition
 
