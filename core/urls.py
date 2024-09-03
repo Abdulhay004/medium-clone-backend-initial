@@ -5,4 +5,5 @@ from django.http import JsonResponse
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('health/', lambda _: JsonResponse({'detail': 'Healthy'}), name='health'),
+    path('', include('articles.urls')),
 ]
