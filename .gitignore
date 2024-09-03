@@ -81,9 +81,9 @@ target/
 
 ### Django ###
 *.log
-*.pot
+#*.pot
 *.pyc
-__pycache__/
+#__pycache__/
 */__pycache__/
 local_settings.py
 .env.local
@@ -92,7 +92,7 @@ local_settings.py
 /static
 # ignore virtualenvs
 venv/
-env/
+#env/
 .venv/
 
 # Custom
