@@ -96,6 +96,7 @@ env/
 .venv/
 
 # Custom
+.env
 .vscode/
 .idea/
 static
