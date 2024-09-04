@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 from decouple import config
 
-SECRET_KEY = config('SECRET_KEY', default='hjg^&%**%%^*GHVGJHGKJGKH')
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-bos)q+o=7(ii#0x_-gjnz16(4$jg81lo1sm+ltk@z%0u20*t%g')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ['*']
