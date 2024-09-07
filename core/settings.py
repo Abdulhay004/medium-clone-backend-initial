@@ -6,25 +6,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
-<<<<<<< HEAD
 from decouple import config
 
 SECRET_KEY = config('SECRET_KEY', default='hjg^&%**%%^*GHVGJHGKJGKH')
 DEBUG = config('DEBUG', default=False, cast=bool)
-=======
 # # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = "django-insecure-bos)q+o=7(ii#0x_-gjnz16(4$jg81lo1sm+ltk@z%0u20*t%g"
 #
 # # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
-
-from decouple import config
->>>>>>> 9c5d848ff4ec9f9b00b26312742001b9ffa219ff
-
-SECRET_KEY = config('SECRET_KEY', default='hjg^&%**%%^*GHVGJHGKJGKH')
-DEBUG = config('DEBUG', default=False, cast=bool)
-
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['127.0.0.1']
 
 # Application definition
 
