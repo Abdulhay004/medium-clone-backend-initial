@@ -2,7 +2,7 @@
 
 Ushbu qo'llanma Python paketlarini boshqarish uchun umumiy PIP buyruqlarini mavjud.
 
-- **Paketini o'rnatish:**
+- **Paketini o'rnatishshshsh:**
     ```bash
     pip install package-name
     ```
