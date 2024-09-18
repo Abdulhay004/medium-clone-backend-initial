@@ -1,6 +1,6 @@
 from pathlib import Path
 
-# Build paths inside the poect like this: BASE_DIR / 'subdir'.
+# Build paths inside the oect like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for
