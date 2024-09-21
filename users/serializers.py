@@ -59,3 +59,8 @@ class ValidationErrorSerializer(serializers.Serializer):
         if isinstance(instance, dict):
             return instance
         return super().to_representation(instance)
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'middle_name', 'email', 'avatar']
