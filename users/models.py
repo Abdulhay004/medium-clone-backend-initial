@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django_resized import ResizedImageField
 
 import os
 import uuid
@@ -15,7 +16,8 @@ class CustomUser(AbstractUser):
 
 
     middle_name = models.CharField(max_length=30, blank=True, null=True)
-    avatar = models.ImageField(upload_to=file_upload, blank=True)
+    # avatar = models.ImageField(upload_to=file_upload, blank=True)
+    avatar = ResizedImageField(size=[300, 300], crop=['top', 'left'], upload_to=file_upload, blank=True)
 
 
     class Meta:
