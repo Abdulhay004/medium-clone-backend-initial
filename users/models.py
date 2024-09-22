@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core import validators
 
 from django.contrib.postgres.indexes import HashIndex
+from users.errors import BIRTH_YEAR_ERROR_MSG
 
 import os
 import uuid
@@ -37,7 +38,7 @@ class CustomUser(AbstractUser):
     def clean(self):  # tug'ilgan yil oralig'ini tekshirish uchun ikkinchi variant
         super().clean()
         if self.birth_year and not (settings.BIRTH_YEAR_MIN < self.birth_year < settings.BIRTH_YEAR_MAX):
-            raise ValidationError('Birth Year Error Message')
+            raise ValidationError(BIRTH_YEAR_ERROR_MSG)
 
     def save(self, *args, **kwargs):
         self.clean()

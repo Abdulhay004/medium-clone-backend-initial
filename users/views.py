@@ -6,6 +6,8 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django_redis import get_redis_connection
+from .enums import TokenType
+from .services import TokenService, UserService
 from .serializers import (
     UserSerializer, LoginSerializer, ValidationErrorSerializer, TokenResponseSerializer, UserUpdateSerializer
 )
@@ -120,3 +122,21 @@ class UsersMe(generics.RetrieveAPIView, generics.UpdateAPIView):
 
 
         return super().partial_update(request, *args, **kwargs)
+
+@extend_schema_view(
+    post=extend_schema(
+        summary="Log out a user",
+        request=None,
+        responses={
+            200: ValidationErrorSerializer,
+            401: ValidationErrorSerializer
+        }
+    )
+)
+class LogoutView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @extend_schema(responses=None)
+    def post(self, request, *args, **kwargs):
+        UserService.create_tokens(request.user, access='fake_token', refresh='fake_token', is_force_add_to_redis=True)
+        return Response({"detail": "Mufaqqiyatli chiqildi."})
