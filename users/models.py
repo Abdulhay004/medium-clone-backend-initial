@@ -6,6 +6,8 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core import validators
 
+from django.contrib.postgres.indexes import HashIndex
+
 import os
 import uuid
 
@@ -41,14 +43,22 @@ class CustomUser(AbstractUser):
         self.clean()
         super().save(*args, **kwargs)
 
-
     class Meta:
-        db_table = "user"  # database table name
+        db_table = "user"
         verbose_name = "User"
         verbose_name_plural = "Users"
-        ordering = ["-date_joined"]  # descending order by date joined
+        ordering = ["-date_joined"]
+
+        # Composite Index va Hash Index qo'shish
+        indexes = [
+            HashIndex(fields=['first_name'], name='%(class)s_first_name_hash_idx'),
+            HashIndex(fields=['last_name'], name='%(class)s_last_name_hash_idx'),
+            HashIndex(fields=['middle_name'], name='%(class)s_middle_name_hash_idx'),
+            models.Index(fields=['username'], name='%(class)s_username_idx'),
+        ]
+
         constraints = [
-            models.CheckConstraint(  # tug'ilgan yil oralig'ini tekshirish uchun uchunchi variant
+            models.CheckConstraint(
                 check=models.Q(birth_year__gt=settings.BIRTH_YEAR_MIN) & models.Q(
                     birth_year__lt=settings.BIRTH_YEAR_MAX),
                 name='check_birth_year_range'
