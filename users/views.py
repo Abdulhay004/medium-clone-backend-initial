@@ -7,7 +7,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django_redis import get_redis_connection
 from .enums import TokenType
-from .services import TokenService, UserService
+from .services import TokenService, UserService, SendEmailService
+import random
 from .serializers import (
     UserSerializer, LoginSerializer, ValidationErrorSerializer, TokenResponseSerializer, UserUpdateSerializer
 )
@@ -109,6 +110,9 @@ class UsersMe(generics.RetrieveAPIView, generics.UpdateAPIView):
         return self.request.user
 
     def get_serializer_class(self):
+        email = self.request.user.email
+        code = random.randint(10000, 99999)
+        SendEmailService.send_email(email, code)
         if self.request.method == 'PATCH':
             return UserUpdateSerializer
         return UserSerializer
