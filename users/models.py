@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core import validators
 
 from django.contrib.postgres.indexes import HashIndex
-from users.errors import BIRTH_YEAR_ERROR_MSG
+from .errors import BIRTH_YEAR_ERROR_MSG
 
 import os
 import uuid
