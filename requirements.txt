@@ -5,6 +5,7 @@ cfgv==3.4.0
 distlib==0.3.8
 Django==5.1.1
 django-modeltranslation==0.19.9
+django-redis==5.4.0
 django-resized==1.0.2
 djangorestframework==3.15.1
 djangorestframework-simplejwt==5.3.1
@@ -22,9 +23,11 @@ jsonschema==4.23.0
 jsonschema-specifications==2023.12.1
 nodeenv==1.9.1
 packaging==24.1
+pillow==10.4.0
 platformdirs==4.3.6
 pluggy==1.5.0
 pre-commit==3.6.0
+psycopg2-binary==2.9.9
 PyJWT==2.9.0
 pytest==8.2.1
 pytest-django==4.8.0
