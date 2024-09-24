@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 from django.utils.translation import gettext_lazy as _
 
-# Build paths inside the ect e this: BASE_DIR / 'subdir'.
+# Build paths inside the ec e this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start devlopnt ttings - unuitable for
