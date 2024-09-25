@@ -1,11 +1,11 @@
 
 from rest_framework import serializers
-from .models import Topics, About, Article
+from .models import Topic, About, Article
 
 class TopicsSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Topics
+        model = Topic
         fields = "__all__"
 
 
