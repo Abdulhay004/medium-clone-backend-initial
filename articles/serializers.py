@@ -24,7 +24,7 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 
 ###I combine both Student and Course into one
-class ArticleDetailSerializer(serializers.ModelSerializer):
+class ArticleCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = '__all__'
