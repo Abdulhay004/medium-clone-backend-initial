@@ -23,7 +23,7 @@ from .serializers import (
     ForgotPasswordVerifyRequestSerializer,
     ResetPasswordResponseSerializer,
     ForgotPasswordVerifyResponseSerializer,
-    ForgotPasswordResponseSerializer, )
+    ForgotPasswordResponseSerializer,)
 from .services import TokenService, UserService, SendEmailService, OTPService
 
 from django.contrib.auth.hashers import make_password
@@ -295,3 +295,4 @@ class ResetPasswordView(generics.UpdateAPIView):
         tokens = UserService.create_tokens(user, is_force_add_to_redis=True)
         redis_conn.delete(token_hash)
         return Response(tokens)
+

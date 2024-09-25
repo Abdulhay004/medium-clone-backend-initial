@@ -79,3 +79,4 @@ class CustomUser(AbstractUser):
     def full_name(self):
         """ Returns the user's full name. """
         return f"{self.last_name} {self.first_name} {self.middle_name}"
+
