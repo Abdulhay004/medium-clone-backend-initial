@@ -18,8 +18,8 @@ class About(models.Model):
     thumbnail = models.ImageField(upload_to="thumbs", editable=False)
 
 class Article(models.Model):
-    about = models.ForeignKey(About, on_delete=models.CASCADE)
-    topics = models.ForeignKey(Topics, on_delete=models.CASCADE)
+    # about = models.ForeignKey(About, on_delete=models.CASCADE)
+    # topics = models.ForeignKey(Topics, on_delete=models.CASCADE)
 
     username = models.CharField(max_length=20)
     first_name = models.CharField(max_length=20)
@@ -27,4 +27,9 @@ class Article(models.Model):
     midle_name = models.CharField(max_length=20, null=True)
     email = models.EmailField(max_length=70,blank=True,unique=True)
     avatar = models.ImageField(null=True)
+
+    def __str__(self):
+        return self.username
+
+
 
