@@ -32,6 +32,8 @@ class Article(models.Model):
 
     def __str__(self):
         return self.username
+    class Meta:
+        db_table = 'article'
 
 
 
