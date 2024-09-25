@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from .models import Topics, About, Author
+from .models import Topics, About, Article
 
 class TopicsSerializer(serializers.ModelSerializer):
 

@@ -17,7 +17,7 @@ class About(models.Model):
     status = models.SmallIntegerField(choices=ORDER_STATUS)
     thumbnail = models.ImageField(upload_to="thumbs", editable=False)
 
-class Author(models.Model):
+class Article(models.Model):
     about = models.ForeignKey(About, on_delete=models.CASCADE)
     topics = models.ForeignKey(Topics, on_delete=models.CASCADE)
 
