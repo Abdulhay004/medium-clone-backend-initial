@@ -11,7 +11,8 @@ class Topic(models.Model):
     class Meta:
         db_table = 'topic'
         verbose_name = 'Topic'
-        ordering = ["-created_at"]
+        verbose_name_plural = 'Topics'
+        ordering = ["name"]
 
 class About(models.Model):
     ORDER_STATUS = ((0, 'Started'), (1, 'Done'), (2, 'Error'))
