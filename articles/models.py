@@ -35,7 +35,7 @@ class Article(models.Model):
     class Meta:
         db_table = 'article'
         verbose_name = 'Article'
-        ordering = ["username"]
+        ordering = ["-created_at"]
 
 
 
