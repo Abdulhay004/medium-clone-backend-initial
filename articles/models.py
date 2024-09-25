@@ -4,7 +4,7 @@ from django.db import models
 
 class Topic(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=1000)
     description = models.CharField(max_length=300)
     is_active = models.BooleanField(default=False)
 
@@ -40,6 +40,7 @@ class Article(models.Model):
         db_table = 'article'
         verbose_name = 'Article'
         ordering = ["-created_at"]
+        verbose_name_plural = "Articles"
 
 class Clap(models.Model):
     pass
