@@ -1,8 +1,8 @@
 
 from rest_framework import serializers
-from .models import Topic, About, Article
+from .models import Topic, About, Article, Clap
 
-class TopicsSerializer(serializers.ModelSerializer):
+class TopicSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Topic
@@ -27,4 +27,15 @@ class AuthorSerializer(serializers.ModelSerializer):
 class ArticleCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
+        fields = '__all__'
+
+
+class ArticleDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Article
+        fields = '__all__'
+
+class ClapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Clap
         fields = '__all__'

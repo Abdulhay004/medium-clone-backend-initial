@@ -41,5 +41,8 @@ class Article(models.Model):
         verbose_name = 'Article'
         ordering = ["-created_at"]
 
+class Clap(models.Model):
+    pass
+
 
 
