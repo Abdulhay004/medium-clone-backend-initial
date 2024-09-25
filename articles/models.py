@@ -34,6 +34,7 @@ class Article(models.Model):
         return self.username
     class Meta:
         db_table = 'article'
+        verbose_name = 'Article'
 
 
 
