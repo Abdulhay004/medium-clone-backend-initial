@@ -18,7 +18,7 @@ class AboutSerializer(serializers.ModelSerializer):
 class AuthorSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Author
+        model = Article
         fields = "__all__"
 
 
@@ -46,5 +46,5 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
         return serializer.data
 
     class Meta:
-        model = Author
+        model = Article
         fields = ('username','first_name','last_name', 'about', 'topic')
