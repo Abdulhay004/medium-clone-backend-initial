@@ -3,9 +3,9 @@ from django.db import models
 
 
 class Topics(models.Model):
-        name = models.CharField(max_length=200)
-        description = models.CharField(max_length=300)
-        is_active = models.BooleanField(default=False)
+    name = models.CharField(max_length=200)
+    description = models.CharField(max_length=300)
+    is_active = models.BooleanField(default=False)
 
 
 
@@ -20,7 +20,6 @@ class About(models.Model):
 class Article(models.Model):
     # about = models.ForeignKey(About, on_delete=models.CASCADE)
     # topics = models.ForeignKey(Topics, on_delete=models.CASCADE)
-
     username = models.CharField(max_length=20)
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
