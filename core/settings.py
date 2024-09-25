@@ -1,6 +1,9 @@
 from pathlib import Path
 import os
 from django.utils.translation import gettext_lazy as _
+from loguru import logger
+import sys
+from .custom_logging import InterceptHandler
 
 # Build paths inside the e e this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -59,6 +62,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     'core.middlewares.CustomLocaleMiddleware',  # custom middleware uchun
+	'core.middlewares.LogRequestMiddleware',
     'django.middleware.locale.LocaleMiddleware',  # locale middleware
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -66,6 +70,31 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'intercept': {
+            '()': InterceptHandler,
+            'level': 0,
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'django.log',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['intercept', 'file'],
+            'level': "DEBUG",
+            'propagate': True,
+        },
+    }
+}
+
+logger.info(f"Using redis | URL: {REDIS_URL}")
 
 ROOT_URLCONF = "core.urls"
 
