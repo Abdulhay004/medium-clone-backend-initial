@@ -8,7 +8,10 @@ class Topic(models.Model):
     description = models.CharField(max_length=300)
     is_active = models.BooleanField(default=False)
 
-
+    class Meta:
+        db_table = 'topic'
+        verbose_name = 'Topic'
+        ordering = ["-created_at"]
 
 class About(models.Model):
     ORDER_STATUS = ((0, 'Started'), (1, 'Done'), (2, 'Error'))
