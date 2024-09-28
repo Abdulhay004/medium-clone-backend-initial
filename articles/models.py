@@ -27,11 +27,11 @@ class Article(models.Model):
     # about = models.ForeignKey(About, on_delete=models.CASCADE)
     # topics = models.ForeignKey(Topics, on_delete=models.CASCADE)
     id = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=20)
-    first_name = models.CharField(max_length=20)
-    last_name = models.CharField(max_length=20)
-    midle_name = models.CharField(max_length=20, null=True)
-    email = models.EmailField(max_length=70,blank=True,unique=True)
+    username = models.CharField(max_length=200)
+    first_name = models.CharField(max_length=200)
+    last_name = models.CharField(max_length=200)
+    midle_name = models.CharField(max_length=200, blank=True)
+    email = models.EmailField()
     avatar = models.ImageField(null=True)
 
     def __str__(self):
@@ -39,7 +39,7 @@ class Article(models.Model):
     class Meta:
         db_table = 'article'
         verbose_name = 'Article'
-        ordering = ["-created_at"]
+        # ordering = ["-created_at"]
         verbose_name_plural = "Articles"
 
 

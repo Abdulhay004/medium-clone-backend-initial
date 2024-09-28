@@ -63,8 +63,7 @@ class ArticleCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Article
-        fields = ['slug', 'title', 'description', 'body', 'tagList', 'createdAt',
-                  'updatedAt', 'favorited', 'favoritesCount', 'author']
+        fields = ['__all__']
         read_only_fields = ['slug', 'createdAt', 'updatedAt', 'author']
 
     def get_author(self, obj):
