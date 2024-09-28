@@ -39,7 +39,7 @@ class Article(models.Model):
     class Meta:
         db_table = 'article'
         verbose_name = 'Article'
-        # ordering = ["-created_at"]
+        ordering = ["-created_at"]
         verbose_name_plural = "Articles"
 
 
