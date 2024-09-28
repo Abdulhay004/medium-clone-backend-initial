@@ -33,6 +33,7 @@ class Article(models.Model):
     midle_name = models.CharField(max_length=200, blank=True)
     email = models.EmailField()
     avatar = models.ImageField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.username
