@@ -1,5 +1,7 @@
 
 from django.db import models
+from datetime import datetime
+
 
 
 class Topic(models.Model):
@@ -21,7 +23,6 @@ class About(models.Model):
     summary = models.CharField(max_length=500)
     content = models.CharField(max_length=500)
     status = models.SmallIntegerField(choices=ORDER_STATUS)
-    thumbnail = models.ImageField(upload_to="thumbs", editable=False)
 
 class Article(models.Model):
     # about = models.ForeignKey(About, on_delete=models.CASCADE)
@@ -30,17 +31,16 @@ class Article(models.Model):
     username = models.CharField(max_length=200)
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
-    midle_name = models.CharField(max_length=200, blank=True)
     email = models.EmailField()
-    avatar = models.ImageField(null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
+    # avatar = models.ImageField()
+    created_at = models.DateTimeField(auto_now_add=False)
+    # updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.username
     class Meta:
         db_table = 'article'
         verbose_name = 'Article'
-        ordering = ["-created_at"]
+        # ordering = ["-created_at"]
         verbose_name_plural = "Articles"
 
 

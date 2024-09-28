@@ -11,7 +11,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 from .models import Article
-from .serializers import ArticleCreateSerializer, TagSerializer
+from .serializers import ArticleCreateSerializer
 from .filters import ArticleFilter
 
 
@@ -21,7 +21,7 @@ class ArticlesView(viewsets.ModelViewSet):
     serializer_class = ArticleCreateSerializer
     permission_classes=[IsAuthenticated]
     lookup_field='slug'
-    filterset_class = ArticleFilter
+    # filterset_class = ArticleFilter
     http_method_names = ['get', 'post', 'put', 'delete']
 
     def get_permissions(self):
@@ -49,71 +49,71 @@ class ArticlesView(viewsets.ModelViewSet):
 
 
 
-    @action(detail=True, methods=['post', 'delete'])
-    def favorite(self, request, slug, *args, **kwargs):
-        if request.method == 'POST':
-            try:
-                article = Article.objects.get(slug=slug)
+    # @action(detail=True, methods=['post', 'delete'])
+    # def favorite(self, request, slug, *args, **kwargs):
+    #     if request.method == 'POST':
+    #         try:
+    #             article = Article.objects.get(slug=slug)
+    #
+    #
+    #             if article.favorites.filter(id=request.user.id).exists():
+    #                 return Response({"errors": {
+    #                     "body": [
+    #                         "Already Favourited Article"
+    #                     ]
+    #                 }})
+    #
+    #             article.favorites.add(request.user)
+    #             serializer = self.get_serializer(article)
+    #             return Response({"article": serializer.data})
+    #
+    #         except Exception:
+    #             return Response({"errors": {
+    #                 "body": [
+    #                     "Bad Request"
+    #                 ]
+    #             }}, status=status.HTTP_404_NOT_FOUND)
+    #     else:
+    #         try:
 
+            #     article = Article.objects.get(slug=slug)
+            #     if article.favorites.get(id=request.user.id):
+            #         article.favorites.remove(request.user.id)
+            #         serializer = self.get_serializer(article)
+            #         return Response({ "article": serializer.data })
+            #
+            #     else:
+            #         raise Exception
+            #
+            # except Exception:
+            #     return Response({"errors": {
+            #         "body": [
+            #             "Bad Request"
+            #         ]
+            #     }}, status=status.HTTP_404_NOT_FOUND)
 
-                if article.favorites.filter(id=request.user.id).exists():
-                    return Response({"errors": {
-                        "body": [
-                            "Already Favourited Article"
-                        ]
-                    }})
-
-                article.favorites.add(request.user)
-                serializer = self.get_serializer(article)
-                return Response({"article": serializer.data})
-
-            except Exception:
-                return Response({"errors": {
-                    "body": [
-                        "Bad Request"
-                    ]
-                }}, status=status.HTTP_404_NOT_FOUND)
-        else:
-            try:
-
-                article = Article.objects.get(slug=slug)
-                if article.favorites.get(id=request.user.id):
-                    article.favorites.remove(request.user.id)
-                    serializer = self.get_serializer(article)
-                    return Response({ "article": serializer.data })
-
-                else:
-                    raise Exception
-
-            except Exception:
-                return Response({"errors": {
-                    "body": [
-                        "Bad Request"
-                    ]
-                }}, status=status.HTTP_404_NOT_FOUND)
-
-    @action(detail=False)
-    def feed(self, request, *args, **kwargs):
-        try:
-            followed_authors = User.objects.filter(followers=request.user)
-            queryset = self.get_queryset()
-            articles = queryset.filter(
-                author__in=followed_authors).order_by('-created')
-            queryset = self.filter_queryset(articles)
-
-            serializer = self.get_serializer(queryset, many=True)
-            response = {
-                'comments': serializer.data,
-                'articleCount': len(serializer.data)
-            }
-            return Response(response)
-
-        except Exception:
-            return Response({"errors": {
-                "body": [
-                    "Bad Request"
-                ]
-            }}, status=status.HTTP_404_NOT_FOUND)
+    # @action(detail=False)
+    # def feed(self, request, *args, **kwargs):
+    #     try:
+    #         followed_authors = User.objects.filter(followers=request.user)
+    #         queryset = self.get_queryset()
+    #         articles = queryset.filter(
+    #             author__in=followed_authors).order_by('-created')
+    #         queryset = self.filter_queryset(articles)
+    #
+    #         serializer = self.get_serializer(queryset, many=True)
+    #         response = {
+    #             'comments': serializer.data,
+    #             'articleCount': len(serializer.data)
+    #         }
+    #         return Response(response)
+    #
+    #     except Exception:
+    #         return Response({"errors": {
+    #             "body": [
+    #                 "Bad Request"
+    #             ]
+    #         }}, status=status.HTTP_404_NOT_FOUND)
 
     def retrieve(self, request, slug, *args, **kwargs):
         try:
@@ -130,51 +130,51 @@ class ArticlesView(viewsets.ModelViewSet):
                 ]
             }}, status=status.HTTP_404_NOT_FOUND)
 
-    def update(self, request, slug, *args, **kwargs):
-
-        try:
-            queryset = self.get_queryset()
-            article = queryset.get(slug=slug)
-
-            if request.user != article.author:
-                return Response({"errors": {
-                    "body": [
-                        "UnAuthorized Action"
-                    ]
-                }}, status=status.HTTP_401_UNAUTHORIZED)
-
-            request_data = request.data.get('article')
-            serializer = self.get_serializer(article, data=request_data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-
-            return Response({"article": serializer.data})
-
-        except Exception:
-            return Response({"errors": {
-                "body": [
-                    "Bad Request"
-                ]
-            }}, status=status.HTTP_404_NOT_FOUND)
-
-    def destroy(self, request, slug, *args, **kwargs):
-        try:
-            queryset = self.get_queryset()
-            article = queryset.get(slug=slug)
-
-            if request.user != article.author:
-                return Response({"errors": {
-                    "body": [
-                        "UnAuthorized Action"
-                    ]
-                }}, status=status.HTTP_401_UNAUTHORIZED)
-
-            article.delete()
-            return Response(status=status.HTTP_200_OK)
-
-        except Exception:
-            return Response({"errors": {
-                "body": [
-                    "Bad Request"
-                ]
-            }}, status=status.HTTP_404_NOT_FOUND)
+    # def update(self, request, slug, *args, **kwargs):
+    #
+    #     try:
+    #         queryset = self.get_queryset()
+    #         article = queryset.get(slug=slug)
+    #
+    #         if request.user != article.author:
+    #             return Response({"errors": {
+    #                 "body": [
+    #                     "UnAuthorized Action"
+    #                 ]
+    #             }}, status=status.HTTP_401_UNAUTHORIZED)
+    #
+    #         request_data = request.data.get('article')
+    #         serializer = self.get_serializer(article, data=request_data)
+    #         serializer.is_valid(raise_exception=True)
+    #         self.perform_update(serializer)
+    #
+    #         return Response({"article": serializer.data})
+    #
+    #     except Exception:
+    #         return Response({"errors": {
+    #             "body": [
+    #                 "Bad Request"
+    #             ]
+    #         }}, status=status.HTTP_404_NOT_FOUND)
+    #
+    # def destroy(self, request, slug, *args, **kwargs):
+    #     try:
+    #         queryset = self.get_queryset()
+    #         article = queryset.get(slug=slug)
+    #
+    #         if request.user != article.author:
+    #             return Response({"errors": {
+    #                 "body": [
+    #                     "UnAuthorized Action"
+    #                 ]
+    #             }}, status=status.HTTP_401_UNAUTHORIZED)
+    #
+    #         article.delete()
+    #         return Response(status=status.HTTP_200_OK)
+    #
+    #     except Exception:
+    #         return Response({"errors": {
+    #             "body": [
+    #                 "Bad Request"
+    #             ]
+    #         }}, status=status.HTTP_404_NOT_FOUND)

@@ -34,6 +34,7 @@ EXTERNAL_APPS = [
     'drf_spectacular',
     'django_redis',
     'modeltranslation',
+    'django_filters',
 ]
 
 LOCAL_APPS = [
