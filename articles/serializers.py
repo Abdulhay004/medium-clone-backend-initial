@@ -1,23 +1,31 @@
 
 from rest_framework import serializers
-from .models import Topic, About, Article, Clap
+from .models import Topic, Article, Clap, User
 
 class ClapSerializer(serializers.ModelSerializer):
     class Meta:
         model = Clap
         fields = "__all__"
-class TopicSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'avatar']
 
+class TopicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Topic
-        fields = "__all__"
+        fields = ['id', 'name', 'description', 'is_active']
 
-
-class AboutSerializer(serializers.ModelSerializer):
+class ArticleSerializer(serializers.ModelSerializer):
+    author = UserSerializer()
+    topics = TopicSerializer(many=True)
 
     class Meta:
-        model = About
-        fields = '__all__'
+        model = Article
+        fields = ['id', 'author', 'title', 'summary', 'content',
+                  'status', 'thumbnail', 'views_count',
+                  'reads_count', 'created_at', 'updated_at', 'topics', 'claps']
+
 
 class AuthorSerializer(serializers.ModelSerializer):
 
@@ -30,12 +38,10 @@ class AuthorSerializer(serializers.ModelSerializer):
 ###I combine both Student and Course into one
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from django.contrib.auth import get_user_model
 
 from .models import Article
 
 
-User = get_user_model()
 
 # class AuthorSerializer(serializers.ModelSerializer):
 #     following = serializers.SerializerMethodField()
