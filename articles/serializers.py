@@ -16,17 +16,6 @@ class TopicSerializer(serializers.ModelSerializer):
         model = Topic
         fields = ['id', 'name', 'description', 'is_active']
 
-class ArticleSerializer(serializers.ModelSerializer):
-    author = UserSerializer()
-    topics = TopicSerializer(many=True)
-
-    class Meta:
-        model = Article
-        fields = ['id', 'author', 'title', 'summary', 'content',
-                  'status', 'thumbnail', 'views_count',
-                  'reads_count', 'created_at', 'updated_at', 'topics', 'claps']
-
-
 class AuthorSerializer(serializers.ModelSerializer):
 
     class Meta:

@@ -11,15 +11,8 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 from .models import Article
-from .serializers import ArticleCreateSerializer, ArticleSerializer
+from .serializers import ArticleCreateSerializer
 
-class ArticleList(generics.ListCreateAPIView):
-    queryset = Article.objects.all()
-    serializer_class = ArticleSerializer
-
-class ArticleDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Article.objects.all()
-    serializer_class = ArticleSerializer
 
 
 class ArticlesView(viewsets.ModelViewSet):
