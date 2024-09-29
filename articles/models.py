@@ -25,18 +25,14 @@ class About(models.Model):
     status = models.SmallIntegerField(choices=ORDER_STATUS)
 
 class Article(models.Model):
-    # about = models.ForeignKey(About, on_delete=models.CASCADE)
-    # topics = models.ForeignKey(Topics, on_delete=models.CASCADE)
-    id = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=200)
-    first_name = models.CharField(max_length=200)
-    last_name = models.CharField(max_length=200)
-    email = models.EmailField()
-    # avatar = models.ImageField()
+    title = models.TextField()
+    summary = models.TextField()
+    content = models.TextField()
+    topic_ids = models.TextField()
     created_at = models.DateTimeField(auto_now_add=False)
     # updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
-        return self.username
+        return self.id
     class Meta:
         db_table = 'article'
         verbose_name = 'Article'

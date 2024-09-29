@@ -205,6 +205,15 @@ def test_article_create(test_article_create_data, api_client, tokens):
 
     response = client.post('/articles/', data=data, format='multipart')
 
+    if status_code == 201:
+        assert response.status_code == status_code
+        assert response.data['title'] == data['title']
+        assert response.data['summary'] == data['summary']
+        assert response.data['content'] == data['content']
+        assert len(response.data['topics']) == 1
+
+    assert response.status_code == status_code
+
 
 @pytest.fixture()
 @pytest.mark.order(12)
