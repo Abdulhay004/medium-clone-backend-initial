@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+import uuid
+
 User = settings.AUTH_USER_MODEL
 
 class Topic(models.Model):
@@ -16,8 +18,8 @@ class Topic(models.Model):
         ordering = ["name"]
 
 class Article(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="author")
     summary = models.TextField()
     content = models.TextField()
     status = models.CharField(max_length=20)

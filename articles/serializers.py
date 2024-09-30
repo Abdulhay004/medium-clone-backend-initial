@@ -50,7 +50,7 @@ class ArticleCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Article
-        fields = ['id', 'title', 'summary', 'content', 'topic_ids', 'created_at']
+        fields = '__all__'
     def create(self, validated_data):
         article = Article(
             author=self.context['request'].user,
