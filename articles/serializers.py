@@ -47,17 +47,29 @@ from .models import Article
 
 
 class ArticleCreateSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer(read_only=True)
+    topic_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Topic.objects.all(),
+        many=True,
+        write_only=True
+    )
+
+    topics = TopicSerializer(read_only=True, many=True)
 
     class Meta:
         model = Article
-        fields = '__all__'
-    def create(self, validated_data):
-        article = Article(
-            author=self.context['request'].user,
-            **validated_data
-        )
-        article.save()
-        return article
+        fields = ['id', 'author', 'title', 'summary', 'content', 'thumbnail', 'topics', 'topic_ids', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
+
+        def create(self, validated_data):
+            topic_ids = validated_data.pop('topic_ids', [])
+            if not isinstance(topic_ids, list):
+                topic_ids = [topic_ids]
+            request = self.context.get('request')
+            author = request.user
+            article = Article.objects.create(author=author, **validated_data)
+            article.topics.set(topic_ids)
+            return article
 
     def update(self, instance, validated_data):
         tags = validated_data.pop('tags')

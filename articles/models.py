@@ -23,7 +23,7 @@ class Article(models.Model):
     summary = models.TextField()
     content = models.TextField()
     status = models.CharField(max_length=20)
-    thumbnail = models.ImageField(upload_to='articles/thumbnails/')
+    thumbnail = models.ImageField(upload_to='articles/thumbnails/', null=True)
     views_count = models.IntegerField(default=0)
     reads_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)

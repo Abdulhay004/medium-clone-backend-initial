@@ -20,8 +20,6 @@ def file_upload(instance, filename):
 
 class CustomUser(AbstractUser):
     """  This model represents a custom user. """
-
-
     middle_name = models.CharField(max_length=30, blank=True, null=True)
     # avatar = models.ImageField(upload_to=file_upload, blank=True)
     avatar = ResizedImageField(size=[300, 300], crop=['top', 'left'], upload_to=file_upload, blank=True)
@@ -60,11 +58,12 @@ class CustomUser(AbstractUser):
 
         constraints = [
             models.CheckConstraint(
-                check=models.Q(birth_year__gt=settings.BIRTH_YEAR_MIN) & models.Q(
-                    birth_year__lt=settings.BIRTH_YEAR_MAX),
+                condition=models.Q(birth_year__gt=settings.BIRTH_YEAR_MIN) &
+                          models.Q(birth_year__lt=settings.BIRTH_YEAR_MAX),
                 name='check_birth_year_range'
             )
         ]
+
 
 
     def __str__(self):
