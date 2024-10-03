@@ -68,6 +68,7 @@ def test_article_delete(article_delete_data, api_client, tokens):
         response = client.delete(f'/articles/{article_id}/')
 
         assert response.status_code == status_code
+        print(response.status_code)
 
         from articles.models import Article
 
