@@ -195,6 +195,7 @@ def test_article_create(test_article_create_data, api_client, tokens):
     status_code, user, data = test_article_create_data
     access, _ = tokens(user)
     client = api_client(token=access)
+    print(status_code)
 
     data = {
         "title": data.get('title'),
@@ -275,6 +276,8 @@ def test_article_retrieve(article_retrieve_data, api_client, tokens):
     access, _ = tokens(user)
     client = api_client(token=access)
     response = client.get(f'/articles/{article_id}/')
+    # print(response.status_code)
+    print(response.data)
 
     assert response.status_code == status_code
 

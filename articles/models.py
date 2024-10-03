@@ -1,12 +1,18 @@
 from django.db import models
 from django.conf import settings
+from django.utils.text import slugify
 import uuid
 
 User = settings.AUTH_USER_MODEL
 
-class Topic(models.Model):
+class Author(models.Model):
     name = models.CharField(max_length=100)
-    description = models.TextField()
+    title = models.CharField(max_length=100)
+class Topic(models.Model):
+    name = models.CharField(max_length=100, null=True)
+    title = models.CharField(max_length=200, null=True)
+    description = models.TextField(blank=True, null=True)
+    # description = models.TextField()
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -22,13 +28,19 @@ class Article(models.Model):
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="author")
     summary = models.TextField()
     content = models.TextField()
-    status = models.CharField(max_length=20)
+    slug = models.SlugField(unique=True, blank=True)
+    status = models.CharField(max_length=20, null=True)
     thumbnail = models.ImageField(upload_to='articles/thumbnails/', null=True)
     views_count = models.IntegerField(default=0)
     reads_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     topics = models.ManyToManyField(Topic, related_name='articles')
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)  # Automatically generate slug from title
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
@@ -44,6 +56,8 @@ class Clap(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
 
 
 

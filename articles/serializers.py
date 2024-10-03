@@ -1,6 +1,6 @@
 
-from rest_framework import serializers
-from .models import Topic, Article, Clap, User
+from rest_framework import serializers, generics
+from .models import Topic, Article, Clap, User, Author
 
 class ClapSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,14 +13,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Topic
-        fields = ['id', 'name', 'description', 'is_active']
+           model = Topic
+           fields = ['id', 'title', 'description']
 
 class AuthorSerializer(serializers.ModelSerializer):
-
     class Meta:
-        model = Article
-        fields = "__all__"
+        model = Author  # Ensure this is the correct model
+        fields = ['id', 'name', 'title']
+
 
 
 
@@ -61,7 +61,7 @@ class ArticleCreateSerializer(serializers.ModelSerializer):
         fields = ['id', 'author', 'title', 'summary', 'content', 'thumbnail', 'topics', 'topic_ids', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
 
-        def create(self, validated_data):
+    def create(self, validated_data):
             topic_ids = validated_data.pop('topic_ids', [])
             if not isinstance(topic_ids, list):
                 topic_ids = [topic_ids]
@@ -95,3 +95,9 @@ class ClapSerializer(serializers.ModelSerializer):
     class Meta:
         model = Clap
         fields = '__all__'
+
+class ArticleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Article
+        fields = '__all__'
+
