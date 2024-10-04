@@ -140,3 +140,5 @@ def test_articles_topic_id(articles_data, api_client, tokens):
     topic_id = topics[0].id
     response = api_client(token=access).get(f'/articles/?topic_id={topic_id}')
     assert response.status_code == status.HTTP_200_OK
+    print(topics[0])
+
