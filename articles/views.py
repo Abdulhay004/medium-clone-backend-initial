@@ -25,7 +25,7 @@ class ArticleDetailView(generics.RetrieveAPIView):
 
 class ArticlesView(viewsets.ModelViewSet):
     queryset = Article.objects.all()
-    serializer_class = ArticleListSerializer
+    serializer_class = ArticleCreateSerializer
 
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ArticleFilter  # Set the filter class
@@ -37,20 +37,4 @@ class ArticlesView(viewsets.ModelViewSet):
             return super().retrieve(request, *args, **kwargs)
         except Article.DoesNotExist:
             return Response({'detail': 'No Article matches the given query.'}, status=status.HTTP_404_NOT_FOUND)
-    # def get_queryset(self):
-    #     # Start with all articles
-    #     queryset = Article.objects.all()
-    #
-    #     # Check if the 'get_top_articles' query parameter is in the request
-    #     top_articles_count = self.request.query_params.get('get_top_articles', None)
-    #
-    #     if top_articles_count is not None:
-    #         try:
-    #             # Convert to an integer
-    #             top_articles_count = int(top_articles_count)
-    #             # Return the top 'n' articles, ordered by created_at (latest first)
-    #             queryset = queryset.order_by('views_count')[:top_articles_count]
-    #         except ValueError:
-    #             pass  #
-    #
-    #     return queryset
+

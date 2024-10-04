@@ -113,6 +113,10 @@ def test_articles_top(articles_data, api_client, tokens):
     access, _ = tokens(user)
 
     response = api_client(token=access).get('/articles/?get_top_articles=2')
+    # print(response.data['results'][0])
+    # print(article_0_id)
+    # print(response.data['results'][1])
+    # print(article_1_id)
     assert response.status_code == status.HTTP_200_OK
     assert len(response.data['results']) == 2
     assert response.data['results'][0]['id'] == article_0_id
