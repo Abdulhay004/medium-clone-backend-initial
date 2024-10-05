@@ -331,18 +331,13 @@ class RecommendationView(APIView):
         more_article_id = request.data.get('more_article_id')  # POST so'rovidan maqola ID'sini olish
 
         if more_article_id:
-            self.add_to_more_recommend(more_article_id, recommendation)
+            article = Article.objects.get(id=more_article_id)
+            if article in recommendation.less_recommend.all():
+                recommendation.less_recommend.remove(article)
+            recommendation.more_recommend.add(article)
         if less_article_id:
-            self.add_to_less_recommend(less_article_id, recommendation)
-    def add_to_less_recommend(self, article_id, recommendation):
-        article = Article.objects.get(id=article_id)
-        if article not in recommendation.more_recommend.all():
-            recommendation.less_recommend.add(article)
-
-    def add_to_more_recommend(self, article_id, recommendation):
-        article = Article.objects.get(id=article_id)
-        if article in recommendation.less_recommend.all():
-            recommendation.less_recommend.remove(article)
-        recommendation.more_recommend.add(article)
-
+            article = Article.objects.get(id=less_article_id)
+            if article not in recommendation.more_recommend.all():
+                recommendation.less_recommend.add(article)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
