@@ -336,13 +336,13 @@ class RecommendationView(APIView):
             self.add_to_less_recommend(less_article_id, recommendation)
     def add_to_less_recommend(self, article_id, recommendation):
         article = Article.objects.get(id=article_id)
-        # if article not in recommendation.more_recommend.all():
-        recommendation.less_recommend.add(article)
+        if article not in recommendation.more_recommend.all():
+            recommendation.less_recommend.add(article)
 
     def add_to_more_recommend(self, article_id, recommendation):
         article = Article.objects.get(id=article_id)
-        # if article in recommendation.less_recommend.all():
-        #     recommendation.less_recommend.remove(article)
+        if article in recommendation.less_recommend.all():
+            recommendation.less_recommend.remove(article)
         recommendation.more_recommend.add(article)
 
 
