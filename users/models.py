@@ -5,9 +5,13 @@ from django_resized import ResizedImageField
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core import validators
+from django.utils import timezone
 
 from django.contrib.postgres.indexes import HashIndex
 from .errors import BIRTH_YEAR_ERROR_MSG
+
+User = settings.AUTH_USER_MODEL
+from articles.models import Article
 
 import os
 import uuid
@@ -80,4 +84,16 @@ class CustomUser(AbstractUser):
     def full_name(self):
         """ Returns the user's full name. """
         return f"{self.last_name} {self.first_name} {self.middle_name}"
+
+class Recommendation(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    more_recommend = models.ManyToManyField(Article, related_name='more_recommendations', blank=True)
+    less_recommend = models.ManyToManyField(Article, related_name='less_recommendations', blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = "recommendation"
+        verbose_name = "Recommendation"
+        verbose_name_plural = "Recommendations"
+        ordering = ["-created_at"]
 

@@ -2,15 +2,19 @@
 from rest_framework import status, permissions, generics, parsers
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import viewsets
 from django.contrib.auth import authenticate, update_session_auth_hash
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django_redis import get_redis_connection
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.views import View
 from .enums import TokenType
 from .services import TokenService, UserService, SendEmailService
 import random
-from rest_framework import status, permissions, generics, parsers, exceptions
+from rest_framework import status, permissions, generics, parsers, exceptions, response
 
 from .serializers import (
     UserSerializer,
@@ -23,7 +27,8 @@ from .serializers import (
     ForgotPasswordVerifyRequestSerializer,
     ResetPasswordResponseSerializer,
     ForgotPasswordVerifyResponseSerializer,
-    ForgotPasswordResponseSerializer,)
+    ForgotPasswordResponseSerializer,
+    RecommendationSerializer)
 from .services import TokenService, UserService, SendEmailService, OTPService
 
 from django.contrib.auth.hashers import make_password
@@ -32,6 +37,7 @@ from .errors import ACTIVE_USER_NOT_FOUND_ERROR_MSG
 from django.contrib.auth import get_user_model
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
+from .models import Article, Recommendation
 
 User = get_user_model()
 
@@ -295,4 +301,48 @@ class ResetPasswordView(generics.UpdateAPIView):
         tokens = UserService.create_tokens(user, is_force_add_to_redis=True)
         redis_conn.delete(token_hash)
         return Response(tokens)
+
+import json
+from django.http import HttpResponse
+class RecommendationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            # If the user is authenticated
+            user_id = request.user.id
+            data = {
+                'message': 'Hello, authenticated user!',
+                'user_id': user_id,
+                'status': 'success',
+            }
+        else:
+            # If the user is not authenticated
+            data = {
+                'message': 'Hello, Guest!',
+                'status': 'success',
+            }
+
+        return Response(data)
+    def post(self, request, *args, **kwargs):
+        user = request.user  # Foydalanuvchini olish
+        recommendation,_ = Recommendation.objects.get_or_create(user=user)  # Foydalanuvchi uchun tavsiyalarni olish
+        less_article_id = request.data.get('less_article_id')  # POST so'rovidan maqola ID'sini olish
+        more_article_id = request.data.get('more_article_id')  # POST so'rovidan maqola ID'sini olish
+
+        if more_article_id:
+            self.add_to_more_recommend(more_article_id, recommendation)
+        if less_article_id:
+            self.add_to_less_recommend(less_article_id, recommendation)
+    def add_to_less_recommend(self, article_id, recommendation):
+        article = Article.objects.get(id=article_id)
+        # if article not in recommendation.more_recommend.all():
+        recommendation.less_recommend.add(article)
+
+    def add_to_more_recommend(self, article_id, recommendation):
+        article = Article.objects.get(id=article_id)
+        # if article in recommendation.less_recommend.all():
+        #     recommendation.less_recommend.remove(article)
+        recommendation.more_recommend.add(article)
+
 

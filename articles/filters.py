@@ -5,6 +5,7 @@ from django_filters import rest_framework as filters
 class ArticleFilter(django_filters.FilterSet):
     get_top_articles = django_filters.NumberFilter(method='filter_get_top_articles')
     topic_id = filters.NumberFilter(field_name='topics__id', lookup_expr='exact')
+    is_recommended = filters.BooleanFilter(field_name='is_recommend', label='Is Recommended')
     def filter_get_top_articles(self, queryset, name, value):
             if value:
                 try:
@@ -16,5 +17,5 @@ class ArticleFilter(django_filters.FilterSet):
 
     class Meta:
         model = Article
-        fields = ['topic_id']
+        fields = ['topic_id', 'is_recommended']
 

@@ -36,6 +36,7 @@ class Article(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     topics = models.ManyToManyField(Topic, related_name='articles')
+    is_recommend = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.slug:
