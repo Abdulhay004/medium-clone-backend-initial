@@ -11,7 +11,6 @@ from django.contrib.postgres.indexes import HashIndex
 from .errors import BIRTH_YEAR_ERROR_MSG
 
 User = settings.AUTH_USER_MODEL
-from articles.models import Article
 
 import os
 import uuid
@@ -85,6 +84,12 @@ class CustomUser(AbstractUser):
         """ Returns the user's full name. """
         return f"{self.last_name} {self.first_name} {self.middle_name}"
 
+from articles.models import Article
+
+class ArticleStatus(models.TextChoices):
+    DRAFT = 'draft', 'Draft'
+    PUBLISH = 'publish', 'Published'
+    ARCHIVE = 'archive', 'Archived'
 class Recommendation(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     more_recommend = models.ManyToManyField(Article, related_name='more_recommendations', blank=True)

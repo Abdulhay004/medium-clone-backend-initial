@@ -302,14 +302,17 @@ class ResetPasswordView(generics.UpdateAPIView):
         redis_conn.delete(token_hash)
         return Response(tokens)
 
-import json
-from django.http import HttpResponse
+
+from .models import Recommendation, ArticleStatus
+from django.db.models import Q
+
+
 class RecommendationView(APIView):
-    permission_classes = [IsAuthenticated]
+    queryset = Article.objects.all()
+    serializer_class = RecommendationSerializer
 
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            # If the user is authenticated
             user_id = request.user.id
             data = {
                 'message': 'Hello, authenticated user!',
@@ -317,27 +320,61 @@ class RecommendationView(APIView):
                 'status': 'success',
             }
         else:
-            # If the user is not authenticated
             data = {
                 'message': 'Hello, Guest!',
                 'status': 'success',
             }
-
         return Response(data)
-    def post(self, request, *args, **kwargs):
-        user = request.user  # Foydalanuvchini olish
-        recommendation,_ = Recommendation.objects.get_or_create(user=user)  # Foydalanuvchi uchun tavsiyalarni olish
-        less_article_id = request.data.get('less_article_id')  # POST so'rovidan maqola ID'sini olish
-        more_article_id = request.data.get('more_article_id')  # POST so'rovidan maqola ID'sini olish
 
-        if more_article_id:
-            article = Article.objects.get(id=more_article_id)
-            if article in recommendation.less_recommend.all():
-                recommendation.less_recommend.remove(article)
-            recommendation.more_recommend.add(article)
-        if less_article_id:
-            article = Article.objects.get(id=less_article_id)
-            if article not in recommendation.more_recommend.all():
-                recommendation.less_recommend.add(article)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def post(self, request, *args, **kwargs):
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = request.user
+            more_article_id = serializer.validated_data.get('more_article_id')
+            less_article_id = serializer.validated_data.get('less_article_id')
+
+            recommendation, is_created = Recommendation.objects.get_or_create(user=user)
+
+            if more_article_id:
+                article = get_object_or_404(Article, id=more_article_id, status=ArticleStatus.PUBLISH)
+                topics = article.topics.all()
+
+                for topic in topics:
+                    if recommendation.less_recommend.filter(id=topic.id).exists():
+                        recommendation.less_recommend.remove(topic)  # Make sure this matches your model
+                    recommendation.more.add(topic)
+
+            if less_article_id:
+                article = get_object_or_404(Article, id=less_article_id, status=ArticleStatus.PUBLISH)
+                topics = article.topics.all()
+
+                for topic in topics:
+                    if recommendation.more_recommend.filter(id=topic.id).exists():
+                        recommendation.more_recommend.remove(topic)  # Make sure this matches your model
+                    recommendation.less_recommend.add(topic)
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def get_serializer(self, *args, **kwargs):
+        if self.request.method == 'POST':
+            return RecommendationSerializer(*args, **kwargs)
+    def filter_by_recommend(self, queryset, name, value):
+        user = self.request.user
+        recommendations = Recommendation.objects.filter(user=user)
+        more_topics = recommendations.values_list('more', flat=True)
+        less_topics = recommendations.values_list('less', flat=True)
+
+
+        if more_topics.exists():
+            queryset = queryset.filter(Q(topics__in=more_topics))
+
+        if less_topics.exists():
+            queryset = queryset.exclude(topics__in=less_topics)
+
+        return queryset
+
+
+
+
+
 
