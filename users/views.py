@@ -37,7 +37,7 @@ from .errors import ACTIVE_USER_NOT_FOUND_ERROR_MSG
 from django.contrib.auth import get_user_model
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
-from .models import Article, Recommendation
+from .models import  Recommendation
 
 User = get_user_model()
 
@@ -303,13 +303,12 @@ class ResetPasswordView(generics.UpdateAPIView):
         return Response(tokens)
 
 
-from .models import Recommendation, ArticleStatus
+from .models import Recommendation
 from django.db.models import Q
 
 
 class RecommendationView(APIView):
-    queryset = Article.objects.all()
-    serializer_class = RecommendationSerializer
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -326,52 +325,11 @@ class RecommendationView(APIView):
             }
         return Response(data)
 
-    def post(self, request, *args, **kwargs):
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            user = request.user
-            more_article_id = serializer.validated_data.get('more_article_id')
-            less_article_id = serializer.validated_data.get('less_article_id')
-
-            recommendation, is_created = Recommendation.objects.get_or_create(user=user)
-
-            if more_article_id:
-                article = get_object_or_404(Article, id=more_article_id, status=ArticleStatus.PUBLISH)
-                topics = article.topics.all()
-
-                for topic in topics:
-                    if recommendation.less_recommend.filter(id=topic.id).exists():
-                        recommendation.less_recommend.remove(topic)  # Make sure this matches your model
-                    recommendation.more.add(topic)
-
-            if less_article_id:
-                article = get_object_or_404(Article, id=less_article_id, status=ArticleStatus.PUBLISH)
-                topics = article.topics.all()
-
-                for topic in topics:
-                    if recommendation.more_recommend.filter(id=topic.id).exists():
-                        recommendation.more_recommend.remove(topic)  # Make sure this matches your model
-                    recommendation.less_recommend.add(topic)
-
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def get_serializer(self, *args, **kwargs):
-        if self.request.method == 'POST':
-            return RecommendationSerializer(*args, **kwargs)
-    def filter_by_recommend(self, queryset, name, value):
-        user = self.request.user
-        recommendations = Recommendation.objects.filter(user=user)
-        more_topics = recommendations.values_list('more', flat=True)
-        less_topics = recommendations.values_list('less', flat=True)
-
-
-        if more_topics.exists():
-            queryset = queryset.filter(Q(topics__in=more_topics))
-
-        if less_topics.exists():
-            queryset = queryset.exclude(topics__in=less_topics)
-
-        return queryset
+    def post(self, request):
+        serializer = RecommendationSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 
