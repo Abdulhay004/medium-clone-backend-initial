@@ -140,9 +140,11 @@ def test_articles_less_recommendations(articles_data, api_client, tokens):
 
     response = client.post('/users/recommend/', data=data, format='json')
     assert response.status_code == status.HTTP_204_NO_CONTENT
-    #
+    print('Articles Data: ', articles_data)
+
     response = client.get('/articles/?is_recommend=true')
     assert response.status_code == status.HTTP_200_OK
+    print(response.data['count'])
     assert response.data['count'] == 0
 
 

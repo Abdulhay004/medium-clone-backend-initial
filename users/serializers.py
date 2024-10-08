@@ -138,6 +138,13 @@ class ResetPasswordResponseSerializer(serializers.Serializer):
 
 from .models import Article, Recommendation
 class RecommendationSerializer(serializers.Serializer):
+    more_article_id = serializers.IntegerField(required=False)
+    less_article_id = serializers.IntegerField(required=False)
     class Meta:
         model = Recommendation
-        fields = ['more_recommend', 'less_recommend']
+        fields = ['user', 'more_recommend', 'less_recommend', 'created_at']
+
+class ArticleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Article
+        fields = '__all__'
