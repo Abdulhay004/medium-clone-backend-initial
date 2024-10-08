@@ -138,22 +138,6 @@ class ResetPasswordResponseSerializer(serializers.Serializer):
 
 from .models import Article, Recommendation
 class RecommendationSerializer(serializers.Serializer):
-    more_article_id = serializers.IntegerField(required=False)
-    less_article_id = serializers.IntegerField(required=False)
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        user_profile, is_created = Recommendation.objects.get_or_create(user=user)
-
-        if 'more_article_id' in validated_data:
-            article = Article.objects.get(id=validated_data['more_article_id'])
-            if article in user_profile.less_recommend.all():
-                user_profile.less_recommend.remove(article)
-            user_profile.more_recommend.add(article)
-
-        elif 'less_article_id' in validated_data:
-            article = Article.objects.get(id=validated_data['less_article_id'])
-            if article not in user_profile.more_recommend.all():
-                user_profile.less_recommend.add(article)
-
-        return user_profile
+    class Meta:
+        model = Recommendation
+        fields = ['more_recommend', 'less_recommend']

@@ -302,12 +302,12 @@ class ResetPasswordView(generics.UpdateAPIView):
         redis_conn.delete(token_hash)
         return Response(tokens)
 
-
-from .models import Recommendation
+from .models import Article, Recommendation, ArticleStatus
 from django.db.models import Q
 
 
 class RecommendationView(APIView):
+    serializer_class = RecommendationSerializer
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -325,14 +325,36 @@ class RecommendationView(APIView):
             }
         return Response(data)
 
-    def post(self, request):
-        serializer = RecommendationSerializer(data=request.data, context={'request': request})
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+
+        user = request.user
+        more_article_id = serializer.validated_data.get('more_article_id')
+        less_article_id = serializer.validated_data.get('less_article_id')
+
+        recommendation, is_created = Recommendation.objects.get_or_create(user=user)
+
+        if more_article_id:
+            article = get_object_or_404(Article, id=more_article_id, status=ArticleStatus.PUBLISH)
+            topics = article.topics.all()
+
+            for topic in topics:
+                if recommendation.less_recommend.filter(id=topic.id).exists():
+                    recommendation.less_recommend.remove(topic)
+                recommendation.more_recommend.add(topic)
+
+        if less_article_id:
+            article = get_object_or_404(Article, id=less_article_id, status=ArticleStatus.PUBLISH)
+            topics = article.topics.all()
+
+            for topic in topics:
+                if recommendation.more_recommend.filter(id=topic.id).exists():
+                    recommendation.more_recommend.remove(topic)
+                recommendation.less_recommend.add(topic)
+
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-
-
-
+    def get_serializer(self, *args, **kwargs):
+           return RecommendationSerializer(*args, **kwargs)
 

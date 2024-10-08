@@ -1,5 +1,7 @@
 import django_filters
+from django.db.models import Q
 from .models import Article
+from users.models import Recommendation
 from django_filters import rest_framework as filters
 
 class ArticleFilter(django_filters.FilterSet):
@@ -14,8 +16,24 @@ class ArticleFilter(django_filters.FilterSet):
                 except ValueError:
                     return queryset  # Invalid value, return unfiltered queryset
             return queryset
+    def filter_by_recommend(self, queryset, name, value):
+        user = self.request.user
+        recommendations = Recommendation.objects.filter(user=user)
+        more_topics = recommendations.values_list('more', flat=True)
+        less_topics = recommendations.values_list('less', flat=True)
+
+
+        if more_topics.exists():
+            queryset = queryset.filter(Q(topics__in=more_topics))
+
+        if less_topics.exists():
+            queryset = queryset.exclude(topics__in=less_topics)
+
+        return queryset
 
     class Meta:
         model = Article
         fields = ['topic_id', 'is_recommended']
+
+
 
