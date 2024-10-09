@@ -154,8 +154,3 @@ class RecommendationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("At least one of 'more_article_id' or 'less_article_id' must be provided.")
 
         return attrs
-
-class ArticleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Article
-        fields = '__all__'
