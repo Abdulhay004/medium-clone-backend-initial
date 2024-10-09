@@ -19,6 +19,8 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ['127.0.0.1']
 
+# "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI4NDI2NjE4LCJpYXQiOjE3Mjg0MjMwMTgsImp0aSI6IjM1YzAxOWJlN2EyMzQ1NGY4NmFhYjAzOTA3NDQ2NTM5IiwidXNlcl9pZCI6MX0.oYg9LFT2MngrkEUdCGgBs1Mh9Ta0owdKscI48Nmmk7U"
+
 DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -35,6 +37,7 @@ EXTERNAL_APPS = [
     'django_redis',
     'modeltranslation',
     'django_filters',
+    'rest_framework.authtoken',
 ]
 
 LOCAL_APPS = [
@@ -125,6 +128,8 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'users.authentications.CustomJWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [

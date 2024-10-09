@@ -303,16 +303,10 @@ class ResetPasswordView(generics.UpdateAPIView):
         return Response(tokens)
 
 from .models import Article, Recommendation, ArticleStatus
-from django.db.models import Q
-from articles.filters import ArticleFilter
-from django_filters.rest_framework import DjangoFilterBackend
 class RecommendationView(APIView):
     serializer_class = RecommendationSerializer
     permission_classes = [IsAuthenticated]
     queryset = Recommendation.objects.all()
-
-    filter_backends = (DjangoFilterBackend,)
-    filterset_class = ArticleFilter
 
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -329,7 +323,7 @@ class RecommendationView(APIView):
             }
         return Response(data)
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         serializer = RecommendationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -338,40 +332,25 @@ class RecommendationView(APIView):
 
         user_recommendations, created = Recommendation.objects.get_or_create(user=request.user)
 
+        # Handle more recommendations
         if more_article_id is not None:
             article = Article.objects.filter(id=more_article_id).first()
             if article:
+                # Remove from less if it exists
                 if article in user_recommendations.less_recommend.all():
                     user_recommendations.less_recommend.remove(article)
+                # Add to more
                 user_recommendations.more_recommend.add(article)
 
+        # Handle less recommendations
         if less_article_id is not None:
             article = Article.objects.filter(id=less_article_id).first()
-            if article and article not in user_recommendations.more_recommend.all():
+            if article:
+                # Only add to less if it's NOT in more
+                if article in user_recommendations.more_recommend.all():
+                    user_recommendations.more_recommend.remove(article)
                 user_recommendations.less_recommend.add(article)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def get_serializer(self, *args, **kwargs):
-           return RecommendationSerializer(*args, **kwargs)
-
-from rest_framework import generics
-from .serializers import ArticleSerializer  # Assuming you have an ArticleSerializer
-
-class FilterArticleFilter:
-    def __init__(self, request):
-        self.request = request
-
-    def get_filtered_queryset(self, user):
-        user_recommendations = Recommendation.objects.get(user=user)
-        return Article.objects.exclude(id__in=user_recommendations.less_recommend.all())
-
-class ArticlesView(generics.ListAPIView):
-    serializer_class = ArticleSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        filter_article = FilterArticleFilter(self.request)
-        return filter_article.get_filtered_queryset(user)
 

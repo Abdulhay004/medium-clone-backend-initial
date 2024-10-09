@@ -14,6 +14,7 @@ User = get_user_model()
 
 from .filters import ArticleFilter
 
+from users.models import Recommendation
 from .models import Article
 from .serializers import ArticleCreateSerializer, ArticleDetailSerializer, ArticleSerializer, AuthorSerializer, ArticleListSerializer
 
@@ -37,4 +38,12 @@ class ArticlesView(viewsets.ModelViewSet):
             return super().retrieve(request, *args, **kwargs)
         except Article.DoesNotExist:
             return Response({'detail': 'No Article matches the given query.'}, status=status.HTTP_404_NOT_FOUND)
+    def get_queryset(self):
+        is_recommend = self.request.query_params.get('is_recommend', None)
+        if is_recommend and self.request.user.is_authenticated:
+            user_recommendations = Recommendation.objects.get(user=self.request.user)
+            recommended_articles_ids = user_recommendations.more_recommend.values_list('id', flat=True)
+            return Article.objects.filter(id__in=recommended_articles_ids)
+        return Article.objects.all()
+
 
