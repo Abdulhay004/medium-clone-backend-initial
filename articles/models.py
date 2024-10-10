@@ -24,6 +24,13 @@ class Topic(models.Model):
         verbose_name_plural = 'Topics'
         ordering = ["name"]
 
+class TopicFollow(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('user', 'topic')
+
 class Article(models.Model):
     title = models.CharField(max_length=200)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="author")

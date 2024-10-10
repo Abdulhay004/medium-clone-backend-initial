@@ -3,6 +3,8 @@ from rest_framework import viewsets , status, mixins, generics
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
+from rest_framework.views import APIView
+from .models import Topic, TopicFollow
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth import get_user_model
 
@@ -69,4 +71,29 @@ class ArticlesView(viewsets.ModelViewSet):
             return Article.objects.filter(id__in=recommended_articles_ids)
         return Article.objects.all()
 
+
+class TopicFollowView(APIView):
+    def post(self, request, id):
+        try:
+            topic = Topic.objects.get(id=id)
+        except Topic.DoesNotExist:
+            return Response({"detail": "Hech qanday mavzu berilgan soʻrovga mos kelmaydi."}, status=status.HTTP_404_NOT_FOUND)
+
+        if TopicFollow.objects.filter(user=request.user, topic=topic).exists():
+            return Response({"detail": f"Siz allaqachon '{topic.name}' mavzusini kuzatyapsiz."}, status=status.HTTP_200_OK)
+
+        TopicFollow.objects.create(user=request.user, topic=topic)
+        return Response({"detail": f"Siz '{topic.name}' mavzusini kuzatyapsiz."}, status=status.HTTP_201_CREATED)
+    def delete(self, request, id):
+        try:
+            topic = Topic.objects.get(id=id)
+        except Topic.DoesNotExist:
+            return Response({"detail": "Hech qanday mavzu berilgan soʻrovga mos kelmaydi."}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            follow_instance = TopicFollow.objects.get(user=request.user, topic=topic)
+            follow_instance.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except TopicFollow.DoesNotExist:
+            return Response({"detail": f"Siz '{topic.name}' mavzusini kuzatmaysiz."}, status=status.HTTP_404_NOT_FOUND)
 
