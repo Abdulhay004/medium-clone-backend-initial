@@ -30,10 +30,10 @@ class Article(models.Model):
     content = models.TextField()
     slug = models.SlugField(unique=True, blank=True)
     STATUS_CHOICES = [
-        ('ACTIVE', 'Active'),
-        ('TRASH', 'Trash'),
+        ('active', 'ACTIVE'),
+        ('trash', 'TRASH'),
     ]
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='ACTIVE')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
     thumbnail = models.ImageField(upload_to='articles/thumbnails/', null=True)
     views_count = models.IntegerField(default=0)
     reads_count = models.IntegerField(default=0)

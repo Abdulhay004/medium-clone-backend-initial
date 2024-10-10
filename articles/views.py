@@ -1,12 +1,8 @@
 
-
-from .models import Topic,Article
-from django.shortcuts import get_object_or_404
-
 from rest_framework import viewsets , status, mixins, generics
-from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
+from rest_framework.exceptions import NotFound
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth import get_user_model
 
@@ -27,27 +23,28 @@ class ArticleDetailView(generics.RetrieveAPIView):
 class ArticlesView(viewsets.ModelViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleCreateSerializer
+    permission_classes = [IsAuthenticated]
 
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ArticleFilter  # Set the filter class
+
+
     def destroy(self, request, *args, **kwargs):
-        # Get the article instance
         article = self.get_object()
+        if request.user == article.author:
+            article.status = 'trash'
+            article.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
-        # Check if the user is the author of the article
-        if article.author != request.user:
-            return Response({"error": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
-
-        # Set the article's status to TRASH
-        article.status = 'TRASH'
-        article.save()
-
-        return Response({"message": "Article moved to trash."}, status=status.HTTP_204_NO_CONTENT)
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
         try:
+            article = self.get_object()
+            if article.status == 'trash':
+                return Response(status=status.HTTP_404_NOT_FOUND)
             return super().retrieve(request, *args, **kwargs)
         except Article.DoesNotExist:
             return Response({'detail': 'No Article matches the given query.'}, status=status.HTTP_404_NOT_FOUND)
