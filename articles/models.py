@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
+from ckeditor.fields import RichTextField
 import uuid
 
 User = settings.AUTH_USER_MODEL
@@ -27,7 +28,7 @@ class Article(models.Model):
     title = models.CharField(max_length=200)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="author")
     summary = models.TextField()
-    content = models.TextField()
+    content = RichTextField()
     slug = models.SlugField(unique=True, blank=True)
     STATUS_CHOICES = [
         ('active', 'ACTIVE'),
@@ -67,7 +68,7 @@ class Clap(models.Model):
 class Comment(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='comments')
     author = models.CharField(max_length=255)
-    content = models.TextField()
+    content = RichTextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
