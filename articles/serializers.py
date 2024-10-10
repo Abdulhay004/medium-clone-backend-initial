@@ -72,13 +72,18 @@ class ArticleCreateSerializer(serializers.ModelSerializer):
             return article
 
     def update(self, instance, validated_data):
-        tags = validated_data.pop('tags')
+        # Bu yerda tags ni olish va yangilashni amalga oshirish
+        tags = validated_data.pop('tags', [])
+
         for key, value in validated_data.items():
             setattr(instance, key, value)
+
         instance.save()
 
-        instance.tags.clear()
-        instance.tags.add(*tags)
+        # Tags ni yangilash
+        if tags:
+            instance.tags.clear()
+            instance.tags.add(*tags)
 
         return instance
 

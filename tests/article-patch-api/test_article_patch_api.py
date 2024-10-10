@@ -74,7 +74,7 @@ def test_article_patch(article_patch_data, api_client, tokens):
     client = api_client(token=access)
 
     response = client.patch(f'/articles/{article_id}/', data=patch_data, format='multipart')
-
+    print(response.status_code)
     assert response.status_code == status_code
 
     if status_code == status.HTTP_200_OK:

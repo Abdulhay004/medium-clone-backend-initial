@@ -28,15 +28,6 @@ class ArticlesView(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ArticleFilter  # Set the filter class
 
-
-    def destroy(self, request, *args, **kwargs):
-        article = self.get_object()
-        if request.user == article.author:
-            article.status = 'trash'
-            article.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_403_FORBIDDEN)
-
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
@@ -48,6 +39,27 @@ class ArticlesView(viewsets.ModelViewSet):
             return super().retrieve(request, *args, **kwargs)
         except Article.DoesNotExist:
             return Response({'detail': 'No Article matches the given query.'}, status=status.HTTP_404_NOT_FOUND)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', True)
+        instance = self.get_object()
+
+        summary = request.data.get('summary')
+        if summary:
+            instance.summary = summary
+
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data)
+    def destroy(self, request, *args, **kwargs):
+        article = self.get_object()
+        if request.user == article.author:
+            article.status = 'trash'
+            article.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
     def get_queryset(self):
         is_recommend = self.request.query_params.get('is_recommend', None)
