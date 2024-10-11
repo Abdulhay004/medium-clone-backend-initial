@@ -1,8 +1,8 @@
 from django.db import models
 from django.conf import settings
-from django.utils.text import slugify
 from ckeditor.fields import RichTextField
-import uuid
+
+from django.utils.text import slugify
 
 User = settings.AUTH_USER_MODEL
 
@@ -52,8 +52,15 @@ class Article(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)  # Automatically generate slug from title
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+            while Article.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
         super().save(*args, **kwargs)
+
 
     def __str__(self):
         return self.title
@@ -85,6 +92,9 @@ class Comment(models.Model):
         verbose_name = "Comment"
         verbose_name_plural = "Comments"
         ordering = ["-created_at"]
+
+
+
 
 
 

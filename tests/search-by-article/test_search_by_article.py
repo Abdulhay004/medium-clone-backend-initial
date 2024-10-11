@@ -79,4 +79,5 @@ def test_search_articles(search_data_factory, api_client, tokens):
         assert len(response.data['results']) == 0
     else:
         returned_article_ids = [article['id'] for article in response.data['results']]
+        print(returned_article_ids)
         assert set(expected_article_ids) == set(returned_article_ids), "Returned articles do not match the expected articles"

@@ -8,6 +8,17 @@ class ArticleFilter(django_filters.FilterSet):
     get_top_articles = django_filters.NumberFilter(method='filter_get_top_articles')
     topic_id = filters.NumberFilter(field_name='topics__id', lookup_expr='exact')
     is_recommended = filters.BooleanFilter(field_name='is_recommend', label='Is Recommended')
+    search = filters.CharFilter(method='filter_by_search')
+    class Meta:
+        model = Article
+        fields = ['topic_id', 'is_recommended']
+    def filter_by_search(self, queryset, name, value):
+        return queryset.filter(
+            Q(topics__name__icontains=value) |
+            Q(title__icontains=value) |
+            Q(summary__icontains=value) |
+            Q(content__icontains=value)
+        ).distinct()
     def filter_get_top_articles(self, queryset, name, value):
             if value:
                 try:
@@ -31,9 +42,6 @@ class ArticleFilter(django_filters.FilterSet):
 
         return queryset
 
-    class Meta:
-        model = Article
-        fields = ['topic_id', 'is_recommended']
 
 
 
