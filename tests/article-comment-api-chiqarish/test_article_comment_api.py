@@ -122,7 +122,8 @@ def test_create_comments_article(api_client, tokens, create_comments_data):
     client = api_client(token=access)
 
     response = client.post(f'/articles/{article_id}/comments/', data=comment_data, format='json')
-
+    print(response.status_code)
+    print(create_comments_data)
     assert response.status_code == status_code
 
     if status_code == status.HTTP_201_CREATED:

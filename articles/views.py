@@ -1,21 +1,25 @@
 
-from rest_framework import viewsets , status, mixins, generics
+from rest_framework import viewsets , status, mixins, generics, serializers
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
+from rest_framework.exceptions import ValidationError
 from .models import Topic, TopicFollow
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.exceptions import PermissionDenied
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
+from django.db.models import F
 
 User = get_user_model()
 
 from .filters import ArticleFilter
 
 from users.models import Recommendation
-from .models import Article
-from .serializers import ArticleCreateSerializer, ArticleDetailSerializer, ArticleSerializer, AuthorSerializer, ArticleListSerializer
+from .models import Article, Comment
+from .serializers import ArticleCreateSerializer, ArticleDetailSerializer, CommentSerializer, ArticleDetailCommentsSerializer
 
 
 class ArticleDetailView(generics.RetrieveAPIView):
@@ -98,3 +102,65 @@ class TopicFollowView(APIView):
         except TopicFollow.DoesNotExist:
             return Response({"detail": f"Siz '{topic.name}' mavzusini kuzatmaysiz."}, status=status.HTTP_404_NOT_FOUND)
 
+create_comments_data = [
+        ("valid_data", 201),
+        ("invalid_data", 400),
+        ("article_status_inactive", 403),
+        ("empty_content", 400),
+        ("required_content", 201),
+        ("non_existent_article_id", 404)
+    ]
+from django.http import Http404
+
+class CreateCommentsView(generics.CreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        article_id = self.kwargs.get('id')
+        if article_id:
+            article = Article.objects.filter(id=article_id).first()
+            if article and article.is_active:
+                return Article.objects.filter(id=article_id)
+            else:
+                raise Http404("Article not found or inactive.")
+        return Article.objects.none()
+
+    def perform_create(self, serializer):
+        article_id = self.kwargs['id']
+        article = self.get_queryset().first()
+        if not article:
+            raise Http404("Article not found or inactive.")
+
+        serializer.save(article=article, user=self.request.user)
+
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+# class CommentsView(viewsets.ModelViewSet):
+#     queryset = Comment.objects.all()
+#     serializer_class = CommentSerializer
+#     permission_classes = [IsAuthenticated]
+#
+#     def perform_update(self, serializer):
+#         serializer.save()
+#
+#     def perform_destroy(self, instance):
+#         instance.delete()
+#
+# class ArticleDetailCommentsView(viewsets.ViewSet):
+#     permission_classes = [IsAuthenticated]
+#
+#     def list(self, request, article_id=None):
+#         queryset = Comment.objects.filter(article_id=article_id, parent=None)  # Top-level comments only
+#         serializer = ArticleDetailCommentsSerializer(queryset, many=True)
+#
+#         return Response({
+#             "count": len(serializer.data),
+#             "next": None,
+#             "previous": None,
+#             "results": [{
+#                 "comments": serializer.data
+#             }]
+#         })

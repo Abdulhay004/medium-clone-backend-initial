@@ -1,15 +1,6 @@
 
 from rest_framework import serializers, generics
-from .models import Topic, Article, Clap, User, Author
-
-class ClapSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Clap
-        fields = "__all__"
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'avatar']
+from .models import Topic, Article, Clap, User, Author, Comment
 
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
@@ -110,4 +101,37 @@ class ArticleListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = ['id', 'title', 'created_at']
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'middle_name', 'email', 'avatar']
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['content']
+
+    def create(self, validated_data):
+        # Extract user from context
+        user = self.context['request'].user
+        validated_data['user'] = user
+        return super().create(validated_data)
+
+    # def get_replies(self, obj):
+    #     return CommentSerializer(obj.replies.all(), many=True).data
+class ArticleDetailCommentsSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    replies = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'article', 'user', 'parent', 'content', 'created_at', 'replies']
+        read_only_fields = ['id', 'created_at', 'user']
+
+    def get_replies(self, obj):
+        # Fetch replies for the comment
+        replies = Comment.objects.filter(parent=obj)
+        return ArticleDetailCommentsSerializer(replies, many=True).data
+
+
 
