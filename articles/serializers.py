@@ -107,31 +107,18 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'first_name', 'last_name', 'middle_name', 'email', 'avatar']
 class CommentSerializer(serializers.ModelSerializer):
+    article = serializers.IntegerField(source='article.id', read_only=True)
     class Meta:
         model = Comment
-        fields = ['content']
+        fields = ['parent', 'content', 'article']
 
-    def create(self, validated_data):
-        # Extract user from context
-        user = self.context['request'].user
-        validated_data['user'] = user
-        return super().create(validated_data)
-
-    # def get_replies(self, obj):
-    #     return CommentSerializer(obj.replies.all(), many=True).data
 class ArticleDetailCommentsSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
-    replies = serializers.SerializerMethodField()
+    user = UserSerializer()
+    replies = serializers.ListField(child=serializers.DictField(), default=[])
 
     class Meta:
         model = Comment
         fields = ['id', 'article', 'user', 'parent', 'content', 'created_at', 'replies']
-        read_only_fields = ['id', 'created_at', 'user']
-
-    def get_replies(self, obj):
-        # Fetch replies for the comment
-        replies = Comment.objects.filter(parent=obj)
-        return ArticleDetailCommentsSerializer(replies, many=True).data
 
 
 

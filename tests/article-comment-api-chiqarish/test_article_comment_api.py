@@ -194,6 +194,7 @@ def test_delete_comment(api_client, tokens, delete_comment_data):
     response = client.delete(f'/articles/comments/{comment_id}/')
 
     assert response.status_code == status_code
+    # print('This is... ', response.data['detail'])
     if status_code == 204:
         assert response.data is None
     elif status_code == 403:
@@ -395,6 +396,8 @@ def test_create_comment_with_parent(api_client, tokens, create_comment_with_pare
         assert 'parent' in response.data or 'content' in response.data
     elif status_code == status.HTTP_404_NOT_FOUND:
         if article_id == 99999:
+            print(status_code)
+            print(response.data['detail'])
             assert response.data['detail'] == 'No Article matches the given query.'
 
 

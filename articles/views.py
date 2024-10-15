@@ -12,6 +12,7 @@ from rest_framework.exceptions import PermissionDenied
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.db.models import F
+from django.http import Http404
 
 User = get_user_model()
 
@@ -102,65 +103,125 @@ class TopicFollowView(APIView):
         except TopicFollow.DoesNotExist:
             return Response({"detail": f"Siz '{topic.name}' mavzusini kuzatmaysiz."}, status=status.HTTP_404_NOT_FOUND)
 
-create_comments_data = [
-        ("valid_data", 201),
-        ("invalid_data", 400),
-        ("article_status_inactive", 403),
-        ("empty_content", 400),
-        ("required_content", 201),
-        ("non_existent_article_id", 404)
-    ]
-from django.http import Http404
-
 class CreateCommentsView(generics.CreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
-
     def get_queryset(self):
         article_id = self.kwargs.get('id')
         if article_id:
             article = Article.objects.filter(id=article_id).first()
-            if article and article.is_active:
+            if article and article.is_active and article.status != 'pending':
                 return Article.objects.filter(id=article_id)
             else:
-                raise Http404("Article not found or inactive.")
+                raise Http404("No Article matches the given query.")
         return Article.objects.none()
 
     def perform_create(self, serializer):
-        article_id = self.kwargs['id']
-        article = self.get_queryset().first()
-        if not article:
+        article1 = self.get_queryset().first()
+        if not article1:
             raise Http404("Article not found or inactive.")
+        else:
+            serializer.save(article=article1, user=self.request.user)
+        # Extract data from the request
+        content = self.kwargs.get('content')
+        parent_id = self.kwargs.get('parent_id')
+        article_id = self.kwargs.get('article_id')
 
-        serializer.save(article=article, user=self.request.user)
+        # Check if the article exists
+        try:
+            article = Article.objects.get(id=article_id)
+        except Article.DoesNotExist:
+            return Response({"detail": "No Article matches the given query."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check if content is provided
+        if not content:
+            return Response({"detail": "Content is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Handle parent comment if provided
+        parent_comment = None
+        if parent_id:
+            try:
+                parent_comment = Comment.objects.get(id=parent_id)
+            except Comment.DoesNotExist:
+                return Response({"detail": "Parent comment does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create the new comment
+        comment = Comment.objects.create(content=content,
+                                         author=self.request.user,
+                                         article=article,
+                                         parent=parent_comment)
+
+        serializer = self.get_serializer(comment)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
 
-# class CommentsView(viewsets.ModelViewSet):
-#     queryset = Comment.objects.all()
-#     serializer_class = CommentSerializer
-#     permission_classes = [IsAuthenticated]
+class CommentsView(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        try:
+            comment = self.get_object()  # Get the comment instance
+        except Comment.DoesNotExist:
+            return Response({"detail": "No Comment matches the given query."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check if the user is the author of the comment
+        if comment.user != request.user:
+            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Use partial=True to allow partial updates
+        serializer = self.get_serializer(comment, data=request.data, partial=True)
+
+        # Validate the serializer data
+        if serializer.is_valid():
+            # Check if content is empty and raise a validation error if so
+            if 'content' in serializer.validated_data and not serializer.validated_data['content']:
+                return Response({"detail": "Content cannot be empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Save the updated comment
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # If validation fails, return errors
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            comment = self.get_object()
+            if request.user != comment.user:
+                return Response({'detail': 'You do not have permission to perform this action.'},
+                            status=status.HTTP_403_FORBIDDEN)
+            self.perform_destroy(comment)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Comment.DoesNotExist:
+            return Response({'detail': 'No Comment matches the given query.'},
+                            status=status.HTTP_404_NOT_FOUND)
 #
-#     def perform_update(self, serializer):
-#         serializer.save()
-#
-#     def perform_destroy(self, instance):
-#         instance.delete()
-#
-# class ArticleDetailCommentsView(viewsets.ViewSet):
-#     permission_classes = [IsAuthenticated]
-#
-#     def list(self, request, article_id=None):
-#         queryset = Comment.objects.filter(article_id=article_id, parent=None)  # Top-level comments only
-#         serializer = ArticleDetailCommentsSerializer(queryset, many=True)
-#
-#         return Response({
-#             "count": len(serializer.data),
-#             "next": None,
-#             "previous": None,
-#             "results": [{
-#                 "comments": serializer.data
-#             }]
-#         })
+class ArticleDetailCommentsView(APIView):
+    serializer_class = ArticleDetailCommentsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, article_id):
+        try:
+            # Fetch the article by ID
+            article = Article.objects.get(id=article_id)
+            # Fetch comments related to the article
+            comments = Comment.objects.filter(article=article)
+            # Serialize the comments
+            serializer = CommentSerializer(comments, many=True)
+
+            response_data = {
+                "count": len(serializer.data),
+                "next": None,
+                "previous": None,
+                "results": [{
+                    "comments": serializer.data
+                }]
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Article.DoesNotExist:
+            return Response({'detail': 'Article not found.'}, status=status.HTTP_404_NOT_FOUND)

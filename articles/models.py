@@ -81,13 +81,14 @@ class Clap(models.Model):
 
 class Comment(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments_as_author', null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.content
+        return self.author
     class Meta:
         db_table = "comment"
         verbose_name = "Comment"
