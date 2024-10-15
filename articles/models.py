@@ -95,6 +95,21 @@ class Comment(models.Model):
         verbose_name_plural = "Comments"
         ordering = ["-created_at"]
 
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'article')  # Prevent multiple favorites for the same article
+        db_table = "favorite"
+        verbose_name = "Favorite"
+        verbose_name_plural = "Favorites"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.article.title}"
+
 
 
 

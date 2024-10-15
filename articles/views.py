@@ -19,7 +19,7 @@ User = get_user_model()
 from .filters import ArticleFilter
 
 from users.models import Recommendation
-from .models import Article, Comment
+from .models import Article, Comment, Favorite
 from .serializers import ArticleCreateSerializer, ArticleDetailSerializer, CommentSerializer, ArticleDetailCommentsSerializer
 
 
@@ -225,3 +225,35 @@ class ArticleDetailCommentsView(APIView):
             return Response(response_data, status=status.HTTP_200_OK)
         except Article.DoesNotExist:
             return Response({'detail': 'Article not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+class FavoriteArticleView(APIView):
+    queryset = Favorite.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, article_id):
+        try:
+            article = Article.objects.get(id=article_id)
+            # Check if the article is already favorited
+            if Favorite.objects.filter(user=request.user, article=article).exists():
+                return Response({'detail': 'Maqola sevimlilarga allaqachon qo\'shilgan.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Create a new favorite entry
+            Favorite.objects.create(user=request.user, article=article)
+            return Response({'detail': 'Maqola sevimlilarga qo\'shildi.'}, status=status.HTTP_201_CREATED)
+
+        except Article.DoesNotExist:
+            return Response({'detail': 'Maqola topilmadi.'}, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, article_id):
+        try:
+            article = Article.objects.get(id=article_id)
+            favorite = Favorite.objects.filter(user=request.user, article=article)
+
+            if not favorite.exists():
+                return Response({'detail': 'Maqola sevimlilarga qo\'shilmagan.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            favorite.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except Article.DoesNotExist:
+            return Response({'detail': 'Maqola topilmadi.'}, status=status.HTTP_404_NOT_FOUND)
