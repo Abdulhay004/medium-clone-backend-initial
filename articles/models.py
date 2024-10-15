@@ -77,7 +77,10 @@ class Clap(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     comments_count = models.PositiveIntegerField(default=0)
-    claps_count = models.PositiveIntegerField(default=0)
+    count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('user', 'article')
 
 class Comment(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='comments')

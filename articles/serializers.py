@@ -22,21 +22,6 @@ from django.contrib.auth import get_user_model
 from .models import Article
 
 
-
-# class AuthorSerializer(serializers.ModelSerializer):
-#     following = serializers.SerializerMethodField()
-#
-#     class Meta:
-#         model = User
-#         fields = '__all__'
-#
-#     def get_following(self, obj):
-#         user = self.context.get('request').user
-#         if user.is_authenticated:
-#             return obj.followers.filter(pk=user.id).exists()
-#         return False
-
-
 class ArticleCreateSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     topic_ids = serializers.PrimaryKeyRelatedField(
@@ -87,11 +72,6 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
         model = Article
         fields = '__all__'
 
-class ClapSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Clap
-        fields = '__all__'
-
 class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
@@ -119,6 +99,11 @@ class ArticleDetailCommentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ['id', 'article', 'user', 'parent', 'content', 'created_at', 'replies']
+
+class ClapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Clap
+        fields = ['user', 'article', 'count']
 
 
 

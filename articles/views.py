@@ -19,8 +19,10 @@ User = get_user_model()
 from .filters import ArticleFilter
 
 from users.models import Recommendation
-from .models import Article, Comment, Favorite
-from .serializers import ArticleCreateSerializer, ArticleDetailSerializer, CommentSerializer, ArticleDetailCommentsSerializer
+from .models import Article, Comment, Favorite, Clap
+from .serializers import (ArticleCreateSerializer, ArticleDetailSerializer,
+                          CommentSerializer, ArticleDetailCommentsSerializer,
+                          ClapSerializer)
 
 
 class ArticleDetailView(generics.RetrieveAPIView):
@@ -230,6 +232,8 @@ class FavoriteArticleView(APIView):
     queryset = Favorite.objects.all()
     permission_classes = [IsAuthenticated]
 
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = ArticleFilter
     def post(self, request, article_id):
         try:
             article = Article.objects.get(id=article_id)
@@ -257,3 +261,30 @@ class FavoriteArticleView(APIView):
 
         except Article.DoesNotExist:
             return Response({'detail': 'Maqola topilmadi.'}, status=status.HTTP_404_NOT_FOUND)
+
+class ClapView(generics.GenericAPIView):
+    serializer_class = ClapSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, article_id):
+        article = Article.objects.get(id=article_id)
+        clap, created = Clap.objects.get_or_create(user=request.user, article=article)
+
+        if created:
+            clap.count = 1
+        else:
+            if clap.count < 50:
+                clap.count += 1
+
+
+        clap.save()
+        return Response(ClapSerializer(clap).data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, article_id):
+        # Delete all claps by the user for this article
+        deleted_count, _ = Clap.objects.filter(user=request.user, article__id=article_id).delete()
+
+        if deleted_count == 0:
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)

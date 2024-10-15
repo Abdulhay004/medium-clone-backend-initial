@@ -5,13 +5,25 @@ from users.models import Recommendation
 from django_filters import rest_framework as filters
 
 class ArticleFilter(django_filters.FilterSet):
+    is_user_favorites = filters.BooleanFilter(field_name='favorites__is_favorite', method='filter_favorites')
     get_top_articles = django_filters.NumberFilter(method='filter_get_top_articles')
     topic_id = filters.NumberFilter(field_name='topics__id', lookup_expr='exact')
     is_recommended = filters.BooleanFilter(field_name='is_recommend', label='Is Recommended')
     search = filters.CharFilter(method='filter_by_search')
     class Meta:
         model = Article
-        fields = ['topic_id', 'is_recommended']
+        fields = ['topic_id', 'is_recommended', 'is_user_favorites']
+
+    def filter_favorites(self, queryset, name, value):
+        user = self.request.user  # Get the current user
+        if user.is_authenticated:
+            if value:
+                # Filter articles that are marked as favorites by the user
+                return queryset.filter(favorite__user=user)
+            else:
+                # If not favorited, exclude those articles
+                return queryset.exclude(favorite__user=user)
+        return queryset  # If user is not authenticated, return full queryset
 
     def filter_by_search(self, queryset, name, value):
         return queryset.filter(
