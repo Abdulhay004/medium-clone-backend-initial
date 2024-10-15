@@ -103,3 +103,11 @@ class Recommendation(models.Model):
         verbose_name_plural = "Recommendations"
         ordering = ["-created_at"]
 
+class ReadingHistory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    date_read = models.DateField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'article')  # Ensure a user can only read an article once
+

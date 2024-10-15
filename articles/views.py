@@ -2,23 +2,19 @@
 from rest_framework import viewsets , status, mixins, generics, serializers
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
-from rest_framework.exceptions import ValidationError
 from .models import Topic, TopicFollow
-from rest_framework.filters import SearchFilter
+from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.exceptions import PermissionDenied
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
-from django.db.models import F
 from django.http import Http404
 
 User = get_user_model()
 
 from .filters import ArticleFilter
 
-from users.models import Recommendation
+from users.models import Recommendation, ReadingHistory
+from users.filters import ReadingHistoryFilter
 from .models import Article, Comment, Favorite, Clap
 from .serializers import (ArticleCreateSerializer, ArticleDetailSerializer,
                           CommentSerializer, ArticleDetailCommentsSerializer,
@@ -41,9 +37,38 @@ class ArticlesView(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def read(self, request, pk=None):
+        try:
+            article = self.get_object()  # Get the article by ID
+            article.reads_count += 1      # Increment reads count
+            article.save()                 # Save the updated article
+
+            # Optionally, add to user's reading history
+            # ReadingHistory.objects.create(user=request.user, article=article)
+
+            return Response({"detail": "Maqolani o'qish soni ortdi."}, status=status.HTTP_200_OK)
+        except Article.DoesNotExist:
+            return Response({"detail": "Article not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def list(self, request, *args, **kwargs):
+        if request.query_params.get('is_reading_history') == 'true':
+            # Filter reading history for the authenticated user
+            reading_history = ReadingHistory.objects.filter(user=request.user)
+            filtered_history = self.filter_queryset(reading_history)
+
+            # Serialize the data (you may need to create a serializer for ReadingHistory)
+            serializer = ReadingHistorySerializer(filtered_history, many=True)
+            return Response(serializer.data)
+
+        return super().list(request, *args, **kwargs)
+
     def retrieve(self, request, *args, **kwargs):
         try:
             article = self.get_object()
+            article.views_count += 1
+            article.save()
+            ReadingHistory.objects.create(user=request.user, article=article)
             if article.status == 'trash':
                 return Response(status=status.HTTP_404_NOT_FOUND)
             return super().retrieve(request, *args, **kwargs)
