@@ -14,6 +14,8 @@ from django.views import View
 from .enums import TokenType
 from .services import TokenService, UserService, SendEmailService
 import random
+from .models import CustomUser
+
 from rest_framework import status, permissions, generics, parsers, exceptions, response
 
 from .serializers import (
@@ -35,6 +37,7 @@ from django.contrib.auth.hashers import make_password
 from secrets import token_urlsafe
 from .errors import ACTIVE_USER_NOT_FOUND_ERROR_MSG
 from django.contrib.auth import get_user_model
+from django.db.models import Sum
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from .models import  Recommendation
@@ -352,5 +355,41 @@ class RecommendationView(APIView):
                 user_recommendations.less_recommend.add(article)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class PopularAuthorsView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+
+    def get(self, request, *args, **kwargs):
+        # Filter active users who have published articles
+        active_users_with_articles = CustomUser.objects.filter(
+            article_set__is_published=True,
+            is_active=True
+        ).distinct()
+
+        # Prepare the response data
+        results = []
+        for user in active_users_with_articles:
+            user_data = {
+                'id': user.id,
+                'first_name': user.first_name,
+                'email': user.email,
+                'avatar': user.avatar.url if user.avatar else None  # Adjust according to your model
+            }
+            results.append(user_data)
+
+        return Response({
+            'count': len(results),
+            'next': None,
+            'previous': None,
+            'results': results
+        }, status=status.HTTP_200_OK)
+
+    def get_queryset(self):
+        return (
+            User.objects.filter(is_active=True)
+            .annotate(total_reads=Sum('article_set__reads_count'))
+            .order_by('-total_reads')[:5]  # Get top 5 authors by reads count
+        )
 
 

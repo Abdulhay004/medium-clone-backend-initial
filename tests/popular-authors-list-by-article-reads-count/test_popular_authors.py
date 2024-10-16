@@ -68,6 +68,7 @@ def test_popular_authors_list_no_authors(api_client, user_factory, tokens):
     client = api_client(token=access)
 
     response = client.get('/users/articles/popular/')
+    print(response.status_code)
 
     assert response.status_code == status.HTTP_200_OK
     data = response.json()

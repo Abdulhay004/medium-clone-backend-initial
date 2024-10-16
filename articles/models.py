@@ -32,7 +32,7 @@ class TopicFollow(models.Model):
 
 class Article(models.Model):
     title = models.CharField(max_length=200)
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="author")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='article_set')
     summary = models.TextField()
     content = RichTextField()
     slug = models.SlugField(unique=True, blank=True)
@@ -49,6 +49,7 @@ class Article(models.Model):
     topics = models.ManyToManyField(Topic, related_name='articles')
     is_recommend = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    is_published = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.slug:
