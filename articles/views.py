@@ -46,7 +46,7 @@ class ArticlesView(viewsets.ModelViewSet):
             # Optionally, add to user's reading history
             # ReadingHistory.objects.create(user=request.user, article=article)
 
-            return Response({"detail": "Maqolani o'qish soni ortdi."}, status=status.HTTP_200_OK)
+            return Response({"detail": "Maqolani o'qish soni ortdi."}, status=status.HTTP_201_CREATED)
         except Article.DoesNotExist:
             return Response({"detail": "Article not found."}, status=status.HTTP_404_NOT_FOUND)
 
