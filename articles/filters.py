@@ -1,10 +1,11 @@
 import django_filters
 from django.db.models import Q
 from .models import Article
-from users.models import Recommendation
+from users.models import Recommendation, ReadingHistory
 from django_filters import rest_framework as filters
 
 class ArticleFilter(django_filters.FilterSet):
+    is_reading_history = django_filters.BooleanFilter(method='filter_is_reading_history')
     is_user_favorites = filters.BooleanFilter(field_name='favorites__is_favorite', method='filter_favorites')
     get_top_articles = django_filters.NumberFilter(method='filter_get_top_articles')
     topic_id = filters.NumberFilter(field_name='topics__id', lookup_expr='exact')
@@ -12,7 +13,14 @@ class ArticleFilter(django_filters.FilterSet):
     search = filters.CharFilter(method='filter_by_search')
     class Meta:
         model = Article
-        fields = ['topic_id', 'is_recommended', 'is_user_favorites']
+        fields = ['topic_id', 'is_recommended', 'is_user_favorites', 'is_reading_history']
+
+    def filter_is_reading_history(self, queryset, name, value):
+        if value:  # If true, filter for articles that are in the reading history
+            user = self.request.user
+            read_articles = ReadingHistory.objects.filter(user=user).values_list('article_id', flat=True)
+            return queryset.filter(id__in=read_articles)
+        return queryset  # If false or not provided, return all articles
 
     def filter_favorites(self, queryset, name, value):
         user = self.request.user  # Get the current user

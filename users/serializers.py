@@ -152,12 +152,3 @@ class RecommendationSerializer(serializers.ModelSerializer):
 
         if more_article_id is None and less_article_id is None:
             raise serializers.ValidationError("At least one of 'more_article_id' or 'less_article_id' must be provided.")
-
-        return attrs
-
-from .models import ReadingHistory
-
-class ReadingHistorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ReadingHistory
-        fields = ['article', 'read_at']

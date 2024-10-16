@@ -14,7 +14,6 @@ User = get_user_model()
 from .filters import ArticleFilter
 
 from users.models import Recommendation, ReadingHistory
-from users.filters import ReadingHistoryFilter
 from .models import Article, Comment, Favorite, Clap
 from .serializers import (ArticleCreateSerializer, ArticleDetailSerializer,
                           CommentSerializer, ArticleDetailCommentsSerializer,
@@ -37,7 +36,7 @@ class ArticlesView(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post'])
     def read(self, request, pk=None):
         try:
             article = self.get_object()  # Get the article by ID
@@ -50,18 +49,6 @@ class ArticlesView(viewsets.ModelViewSet):
             return Response({"detail": "Maqolani o'qish soni ortdi."}, status=status.HTTP_200_OK)
         except Article.DoesNotExist:
             return Response({"detail": "Article not found."}, status=status.HTTP_404_NOT_FOUND)
-
-    def list(self, request, *args, **kwargs):
-        if request.query_params.get('is_reading_history') == 'true':
-            # Filter reading history for the authenticated user
-            reading_history = ReadingHistory.objects.filter(user=request.user)
-            filtered_history = self.filter_queryset(reading_history)
-
-            # Serialize the data (you may need to create a serializer for ReadingHistory)
-            serializer = ReadingHistorySerializer(filtered_history, many=True)
-            return Response(serializer.data)
-
-        return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
         try:
