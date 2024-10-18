@@ -78,6 +78,7 @@ def test_follow_author(api_client, follow_author_data, tokens):
 
         client = api_client(token=access)
         followings_response = client.get("/users/following/")
+        print(followings_response)
         followings_ids = [followee['id'] for followee in followings_response.data['results']]
         assert author.id in followings_ids
 
@@ -86,6 +87,7 @@ def test_follow_author(api_client, follow_author_data, tokens):
             client = api_client(token=access)
 
             response = client.get("/users/followers/")
+
 
             assert response.status_code == status.HTTP_200_OK
             follower_ids = [follower['id'] for follower in response.data['results']]

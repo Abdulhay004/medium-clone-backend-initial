@@ -4,7 +4,8 @@ from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from .models import Recommendation
+from .models import Recommendation, Follow
+from articles.models import Article
 
 from .errors import BIRTH_YEAR_ERROR_MSG
 
@@ -136,7 +137,6 @@ class ResetPasswordResponseSerializer(serializers.Serializer):
         return value
 
 
-from .models import Article, Recommendation
 class RecommendationSerializer(serializers.ModelSerializer):
     more_article_id = serializers.IntegerField(required=False)
     less_article_id = serializers.IntegerField(required=False)
@@ -152,3 +152,8 @@ class RecommendationSerializer(serializers.ModelSerializer):
 
         if more_article_id is None and less_article_id is None:
             raise serializers.ValidationError("At least one of 'more_article_id' or 'less_article_id' must be provided.")
+
+class FollowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Follow
+        fields = ['id', 'follower', 'followed']

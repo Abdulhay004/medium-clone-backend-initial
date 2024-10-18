@@ -8,6 +8,7 @@ User = settings.AUTH_USER_MODEL
 class Author(models.Model):
     name = models.CharField(max_length=100)
     title = models.CharField(max_length=100)
+
 class Topic(models.Model):
     name = models.CharField(max_length=100, null=True)
     title = models.CharField(max_length=200, null=True)

@@ -1,5 +1,3 @@
-
-from rest_framework import status, permissions, generics, parsers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import viewsets
@@ -9,18 +7,19 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django_redis import get_redis_connection
 from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .enums import TokenType
 from .services import TokenService, UserService, SendEmailService
 import random
-from .models import CustomUser
+from .models import CustomUser, Author, Follow
 
-from rest_framework import status, permissions, generics, parsers, exceptions, response
+from rest_framework import status, permissions, parsers, exceptions, generics
+from rest_framework.generics import ListAPIView
 
 from .serializers import (
-    UserSerializer,
-    LoginSerializer,
+    UserSerializer,LoginSerializer,
     ValidationErrorSerializer,
     TokenResponseSerializer,
     UserUpdateSerializer,
@@ -30,7 +29,7 @@ from .serializers import (
     ResetPasswordResponseSerializer,
     ForgotPasswordVerifyResponseSerializer,
     ForgotPasswordResponseSerializer,
-    RecommendationSerializer)
+    RecommendationSerializer, FollowSerializer)
 from .services import TokenService, UserService, SendEmailService, OTPService
 
 from django.contrib.auth.hashers import make_password
@@ -356,9 +355,30 @@ class RecommendationView(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class PopularAuthorsView(generics.ListAPIView):
+class PopularAuthorsView(LoginRequiredMixin, ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
+    # def post(self, request, author_id):
+    #     author = get_object_or_404(Author, id=author_id)
+    #
+    #     # Follow the author
+    #     follow, created = Follow.objects.get_or_create(user=request.user, author=author)
+    #
+    #     if created:
+    #         return JsonResponse({"detail": "Mofaqqiyatli follow qilindi."}, status=201)
+    #     else:
+    #         return JsonResponse({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=400)
+    #
+    # def delete(self, request, author_id):
+    #     author = get_object_or_404(Author, id=author_id)
+    #
+    #     # Unfollow the author
+    #     try:
+    #         follow = Follow.objects.get(user=request.user, author=author)
+    #         follow.delete()
+    #         return HttpResponse(status=204)  # No Content
+    #     except Follow.DoesNotExist:
+    #         return JsonResponse({"detail": "Siz ushbu foydalanuvchini kuzatmayapsiz."}, status=400)
 
     def get(self, request, *args, **kwargs):
         # Filter active users who have published articles
@@ -392,4 +412,43 @@ class PopularAuthorsView(generics.ListAPIView):
             .order_by('-total_reads')[:5]  # Get top 5 authors by reads count
         )
 
+class AuthorFollowView(generics.CreateAPIView):
+    serializer_class = FollowSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            user_id = request.user.id
+            data = {
+                'message': 'Hello, authenticated user!',
+                'user_id': user_id,
+                'status': 'success',
+            }
+        else:
+            data = {
+                'message': 'Hello, Guest!',
+                'status': 'success',
+            }
+        return Response(data)
+
+    def post(self, request, id):
+        author = get_object_or_404(User, id=id)
+        if Follow.objects.filter(follower=request.user, followed=author).exists():
+            return Response({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=status.HTTP_200_OK)
+
+        Follow.objects.create(follower=request.user, followed=author)
+        return Response({"detail": "Mofaqqiyatli follow qilindi."}, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, id):
+        author = get_object_or_404(User, id=id)
+        follow_instance = get_object_or_404(Follow, follower=request.user, followed=author)
+        follow_instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class FollowersListView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.request.user.followers.all()
 

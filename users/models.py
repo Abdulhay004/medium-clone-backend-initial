@@ -10,6 +10,8 @@ from django.utils import timezone
 from django.contrib.postgres.indexes import HashIndex
 from .errors import BIRTH_YEAR_ERROR_MSG
 
+from articles.models import Article, Author
+
 User = settings.AUTH_USER_MODEL
 
 import os
@@ -85,8 +87,6 @@ class CustomUser(AbstractUser):
         return f"{self.last_name} {self.first_name} {self.middle_name}"
 
 
-from articles.models import Article
-
 class ArticleStatus(models.TextChoices):
     DRAFT = 'draft', 'Draft'
     PUBLISH = 'publish', 'Published'
@@ -110,4 +110,14 @@ class ReadingHistory(models.Model):
 
     class Meta:
         unique_together = ('user', 'article')  # Ensure a user can only read an article once
+
+class Follow(models.Model):
+    follower = models.ForeignKey(User, related_name='following', on_delete=models.CASCADE, null=True)
+    followed = models.ForeignKey(User, related_name='followers', on_delete=models.CASCADE, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    class Meta:
+        unique_together = ('follower', 'followed')
+
+    def __str__(self):
+        return f"{self.follower} follows {self.followed}"
 
