@@ -452,3 +452,16 @@ class FollowersListView(generics.ListAPIView):
     def get_queryset(self):
         return self.request.user.followers.all()
 
+class FollowingListView(View):
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        if user.is_authenticated:
+            followings = Follow.objects.filter(follower=user).select_related('followed')
+
+            followings_data = [{'id': follow.followed.id, 'username': follow.followed.username} for follow in followings]
+
+            return JsonResponse({'results': followings_data})
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+
+
+
