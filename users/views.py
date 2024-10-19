@@ -405,7 +405,7 @@ class AuthorFollowView(APIView):
         follow_exists = Follow.objects.filter(follower=follower_user, followed=followed_user).exists()
 
         if follow_exists:
-            return Response({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=status.HTTP_201_CREATED)
+            return Response({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=status.HTTP_200_OK)
 
         # Create a new follow relationship
         follow = Follow.objects.create(
