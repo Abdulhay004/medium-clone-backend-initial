@@ -114,10 +114,18 @@ class ReadingHistory(models.Model):
 class Follow(models.Model):
     follower = models.ForeignKey(User, related_name='following', on_delete=models.CASCADE, null=True)
     followed = models.ForeignKey(User, related_name='followers', on_delete=models.CASCADE, null=True)
-    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    followee = models.ForeignKey(User, related_name='followee', on_delete=models.CASCADE, null=True)
+    username = models.CharField(max_length=150, null=True)
+    first_name = models.CharField(max_length=30, null=True)
+    last_name = models.CharField(max_length=30, null=True)
+    middle_name = models.CharField(max_length=30, blank=True, null=True)
+    email = models.EmailField(null=True)
+    avatar = models.URLField(null=True)
     class Meta:
+        db_table = 'follow'
         unique_together = ('follower', 'followed')
 
     def __str__(self):
         return f"{self.follower} follows {self.followed}"
+
 

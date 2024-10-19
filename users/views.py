@@ -358,27 +358,7 @@ class RecommendationView(APIView):
 class PopularAuthorsView(LoginRequiredMixin, ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
-    # def post(self, request, author_id):
-    #     author = get_object_or_404(Author, id=author_id)
-    #
-    #     # Follow the author
-    #     follow, created = Follow.objects.get_or_create(user=request.user, author=author)
-    #
-    #     if created:
-    #         return JsonResponse({"detail": "Mofaqqiyatli follow qilindi."}, status=201)
-    #     else:
-    #         return JsonResponse({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=400)
-    #
-    # def delete(self, request, author_id):
-    #     author = get_object_or_404(Author, id=author_id)
-    #
-    #     # Unfollow the author
-    #     try:
-    #         follow = Follow.objects.get(user=request.user, author=author)
-    #         follow.delete()
-    #         return HttpResponse(status=204)  # No Content
-    #     except Follow.DoesNotExist:
-    #         return JsonResponse({"detail": "Siz ushbu foydalanuvchini kuzatmayapsiz."}, status=400)
+
 
     def get(self, request, *args, **kwargs):
         # Filter active users who have published articles
@@ -412,56 +392,68 @@ class PopularAuthorsView(LoginRequiredMixin, ListAPIView):
             .order_by('-total_reads')[:5]  # Get top 5 authors by reads count
         )
 
-class AuthorFollowView(generics.CreateAPIView):
+class AuthorFollowView(APIView):
+    queryset = Follow.objects.all()
     serializer_class = FollowSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            user_id = request.user.id
-            data = {
-                'message': 'Hello, authenticated user!',
-                'user_id': user_id,
-                'status': 'success',
-            }
-        else:
-            data = {
-                'message': 'Hello, Guest!',
-                'status': 'success',
-            }
-        return Response(data)
-
     def post(self, request, id):
-        author = get_object_or_404(User, id=id)
-        if Follow.objects.filter(follower=request.user, followed=author).exists():
-            return Response({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=status.HTTP_200_OK)
 
-        Follow.objects.create(follower=request.user, followed=author)
+        followed_user = User.objects.get(id=id) # Fetch the user to follow
+        follower_user = request.user              # Current user (follower)
+
+        follow_exists = Follow.objects.filter(follower=follower_user, followed=followed_user).exists()
+
+        if follow_exists:
+            return Response({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=status.HTTP_201_CREATED)
+
+        # Create a new follow relationship
+        follow = Follow.objects.create(
+            follower=follower_user,
+            followed=followed_user,
+            username=followed_user.username,
+            first_name=followed_user.first_name,
+            last_name=followed_user.last_name,
+            middle_name=followed_user.first_name,
+            email=followed_user.email,
+            avatar=followed_user.profile.avatar.url if hasattr(followed_user, 'profile') else None
+        )
         return Response({"detail": "Mofaqqiyatli follow qilindi."}, status=status.HTTP_201_CREATED)
 
     def delete(self, request, id):
-        author = get_object_or_404(User, id=id)
-        follow_instance = get_object_or_404(Follow, follower=request.user, followed=author)
-        follow_instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        followed_user = User.objects.get(id=id) # Fetch the user to follow
+        follower_user = request.user              # Current user (follower)
+
+        try:
+            follow = Follow.objects.get(follower=follower_user, followed=followed_user)
+            follow.delete() # Delete the follow relationship
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Follow.DoesNotExist: # 'Follow.DoesNotExist' xatosini ushlang
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
 class FollowersListView(generics.ListAPIView):
-    serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
 
     def get_queryset(self):
-        return self.request.user.followers.all()
+        user = self.request.user
+        followers = Follow.objects.filter(followed=user).select_related('follower')
+        return User.objects.filter(id__in=followers.values_list('follower_id', flat=True))
 
-class FollowingListView(View):
+class FollowingListView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
         user = request.user
-        if user.is_authenticated:
-            followings = Follow.objects.filter(follower=user).select_related('followed')
 
-            followings_data = [{'id': follow.followed.id, 'username': follow.followed.username} for follow in followings]
+        followings = Follow.objects.filter(follower=user).select_related('followed')
 
-            return JsonResponse({'results': followings_data})
-        return JsonResponse({'error': 'Unauthorized'}, status=401)
+        followings_data = [{'id': follow.followed.id, 'username': follow.followed.username} for follow in followings]
+
+        return Response({'results': followings_data})  # DRF Response obyekti bilan qaytish
+
+
+
 
 
 

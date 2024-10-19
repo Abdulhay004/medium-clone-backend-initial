@@ -11,8 +11,12 @@ from .errors import BIRTH_YEAR_ERROR_MSG
 
 User = get_user_model()
 
+class UserSerializer2(serializers.ModelSerializer):
+    class Meta:
+        fields = ['id', 'username', 'email']
 
-class UserSerializer(serializers.ModelSerializer):  # user uchun [serializer](<http://serializers.py>) klasi
+
+class UserSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(required=True, min_length=1)
     last_name = serializers.CharField(required=True, min_length=1)
 
@@ -156,4 +160,5 @@ class RecommendationSerializer(serializers.ModelSerializer):
 class FollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Follow
-        fields = ['id', 'follower', 'followed']
+        fields = ['id', 'username', 'first_name', 'last_name', 'middle_name', 'email', 'avatar']
+
