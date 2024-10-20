@@ -114,7 +114,6 @@ class ReadingHistory(models.Model):
 class Follow(models.Model):
     follower = models.ForeignKey(User, related_name='following', on_delete=models.CASCADE, null=True)
     followed = models.ForeignKey(User, related_name='followers', on_delete=models.CASCADE, null=True)
-    followee = models.ForeignKey(User, related_name='followee', on_delete=models.CASCADE, null=True)
     username = models.CharField(max_length=150, null=True)
     first_name = models.CharField(max_length=30, null=True)
     last_name = models.CharField(max_length=30, null=True)

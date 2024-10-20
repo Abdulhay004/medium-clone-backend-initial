@@ -397,13 +397,13 @@ class AuthorFollowView(APIView):
     serializer_class = FollowSerializer
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, id, followee_id): # followee_id qoshildi
+    def post(self, request, id):
         followed_user = User.objects.get(id=id)
         follower_user = request.user
-        followee_user = User.objects.get(id=followee_id) # followee_user olindi
 
         # Allaqachon kuzatilayotgan bo'lsa, 200 OK qaytaring
-        already_following = Follow.objects.filter(follower=follower_user, followed=followed_user, followee=followee_user).first()
+        already_following = Follow.objects.filter(follower=follower_user, followed=followed_user).first()
+        print(already_following)
         if already_following:
             return Response({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=status.HTTP_200_OK)
 
@@ -411,26 +411,24 @@ class AuthorFollowView(APIView):
         follow = Follow.objects.create(
             follower=follower_user,
             followed=followed_user,
-            followee=followee_user, # followee maydonini qo'shish
             username=followed_user.username,
             first_name=followed_user.first_name,
             last_name=followed_user.last_name,
-            middle_name=followed_user.first_name,
+            middle_name=followed_user.middle_name,  # Исправлено на middle_name
             email=followed_user.email,
             avatar=followed_user.profile.avatar.url if hasattr(followed_user, 'profile') else None
         )
         return Response({"detail": "Mofaqqiyatli follow qilindi."}, status=status.HTTP_201_CREATED)
 
-    def delete(self, request, id, followee_id): # followee_id qoshildi
-        followed_user = User.objects.get(id=id)
-        follower_user = request.user
-        followee_user = User.objects.get(id=followee_id) # followee_user olindi
+    def delete(self, request, id):
+        followed_user = User.objects.get(id=id) # Fetch the user to follow
+        follower_user = request.user              # Current user (follower)
 
         try:
-            follow = Follow.objects.get(follower=follower_user, followed=followed_user, followee=followee_user) # followee qo'shildi
-            follow.delete()
+            follow = Follow.objects.get(follower=follower_user, followed=followed_user)
+            follow.delete() # Delete the follow relationship
             return Response(status=status.HTTP_204_NO_CONTENT)
-        except Follow.DoesNotExist:
+        except Follow.DoesNotExist: # 'Follow.DoesNotExist' xatosini ushlang
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 class FollowersListView(generics.ListAPIView):
