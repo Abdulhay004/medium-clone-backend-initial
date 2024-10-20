@@ -58,12 +58,12 @@ def follow_author_data(request, user_factory):
 @pytest.mark.django_db
 @pytest.mark.order(4)
 @pytest.mark.parametrize(
-    'follow_author_data',
-    [
-        "valid_data",
-        "invalid_data",
-        "already_following"
-    ],
+        'follow_author_data',
+        [
+            "valid_data",
+            "invalid_data",
+            "already_following"
+        ],
     indirect=True
 )
 def test_follow_author(api_client, follow_author_data, tokens):
@@ -77,8 +77,7 @@ def test_follow_author(api_client, follow_author_data, tokens):
 
     if author:
         response = client.post(f"/users/{author.id}/follow/")
-        followed_user = User.objects.get(id = author.id)
-        print(Follow.objects.filter(followed=followed_user).first())
+        print(author)
         assert response.status_code == status_code
         assert response.data['detail'] in ["Mofaqqiyatli follow qilindi.", "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."]
 

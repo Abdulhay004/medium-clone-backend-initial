@@ -393,43 +393,40 @@ class PopularAuthorsView(LoginRequiredMixin, ListAPIView):
         )
 
 class AuthorFollowView(APIView):
-    queryset = Follow.objects.all()
-    serializer_class = FollowSerializer
+    # queryset = Follow.objects.all()
+    # serializer_class = FollowSerializer
     permission_classes = [IsAuthenticated]
 
     def post(self, request, id):
-        followed_user = User.objects.get(id=id)
-        follower_user = request.user
+        try:
+            followed_user = User.objects.get(id=id)
+            if Follow.objects.filter(follower=request.user, followed=followed_user).exists():
+                return Response({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Allaqachon kuzatilayotgan bo'lsa, 200 OK qaytaring
-        already_following = Follow.objects.filter(follower=follower_user, followed=followed_user).first()
-        print(already_following)
-        if already_following:
-            return Response({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=status.HTTP_200_OK)
-
-        # Create a new follow relationship
-        follow = Follow.objects.create(
-            follower=follower_user,
+            Follow.objects.create(
+            follower=request.user,
             followed=followed_user,
             username=followed_user.username,
             first_name=followed_user.first_name,
             last_name=followed_user.last_name,
-            middle_name=followed_user.middle_name,  # Исправлено на middle_name
+            middle_name=followed_user.first_name,
             email=followed_user.email,
             avatar=followed_user.profile.avatar.url if hasattr(followed_user, 'profile') else None
-        )
-        return Response({"detail": "Mofaqqiyatli follow qilindi."}, status=status.HTTP_201_CREATED)
+            )
+            return Response({"detail": "Mofaqqiyatli follow qilindi."}, status=status.HTTP_201_CREATED)
+        except User.DoesNotExist:
+            return Response({"detail": "Foydalanuvchi topilmadi."}, status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request, id):
-        followed_user = User.objects.get(id=id) # Fetch the user to follow
-        follower_user = request.user              # Current user (follower)
-
         try:
-            follow = Follow.objects.get(follower=follower_user, followed=followed_user)
-            follow.delete() # Delete the follow relationship
+            followed_user = User.objects.get(id=id)
+            follow_instance = Follow.objects.get(follower=request.user, followed=followed_user)
+            follow_instance.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        except Follow.DoesNotExist: # 'Follow.DoesNotExist' xatosini ushlang
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        except User.DoesNotExist:
+            return Response({"detail": "Foydalanuvchi topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+        except Follow.DoesNotExist:
+            return Response({"detail": "Siz ushbu foydalanuvchini kuzatmayapsiz."}, status=status.HTTP_400_BAD_REQUEST)
 
 class FollowersListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
