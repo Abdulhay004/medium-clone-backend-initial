@@ -126,6 +126,6 @@ class Follow(models.Model):
         unique_together = ('follower', 'followed')
 
     def __str__(self):
-        return f"{self.follower} follows {self.followed}"
+        return f"{self.follower}"
 
 

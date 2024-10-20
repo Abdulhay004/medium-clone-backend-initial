@@ -1,5 +1,9 @@
 import pytest
 from rest_framework import status
+from django.contrib.auth import get_user_model
+from users.models import Follow
+
+User = get_user_model()
 
 
 @pytest.mark.order(1)
@@ -73,6 +77,8 @@ def test_follow_author(api_client, follow_author_data, tokens):
 
     if author:
         response = client.post(f"/users/{author.id}/follow/")
+        followed_user = User.objects.get(id = author.id)
+        print(Follow.objects.filter(followed=followed_user).first())
         assert response.status_code == status_code
         assert response.data['detail'] in ["Mofaqqiyatli follow qilindi.", "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."]
 
