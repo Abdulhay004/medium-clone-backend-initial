@@ -397,15 +397,18 @@ class AuthorFollowView(APIView):
     # serializer_class = FollowSerializer
     permission_classes = [IsAuthenticated]
 
+    def get(self, request, id):
+        return Response({'GetOK!'}, status=status.HTTP_200_OK)
+
     def post(self, request, id):
         try:
             followed_user = User.objects.get(id=id)
-            if Follow.objects.filter(follower=request.user, followed=followed_user).exists():
-                return Response({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=status.HTTP_400_BAD_REQUEST)
+            if Follow.objects.filter(follower=request.user, followee=followed_user).exists():
+                return Response({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=status.HTTP_200_OK)
 
             Follow.objects.create(
             follower=request.user,
-            followed=followed_user,
+            followee=followed_user,
             username=followed_user.username,
             first_name=followed_user.first_name,
             last_name=followed_user.last_name,
@@ -420,13 +423,13 @@ class AuthorFollowView(APIView):
     def delete(self, request, id):
         try:
             followed_user = User.objects.get(id=id)
-            follow_instance = Follow.objects.get(follower=request.user, followed=followed_user)
+            follow_instance = Follow.objects.get(follower=request.user, followee=followed_user)
             follow_instance.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except User.DoesNotExist:
             return Response({"detail": "Foydalanuvchi topilmadi."}, status=status.HTTP_404_NOT_FOUND)
         except Follow.DoesNotExist:
-            return Response({"detail": "Siz ushbu foydalanuvchini kuzatmayapsiz."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Siz ushbu foydalanuvchini kuzatmayapsiz."}, status=status.HTTP_404_NOT_FOUND)
 
 class FollowersListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
@@ -434,7 +437,7 @@ class FollowersListView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        followers = Follow.objects.filter(followed=user).select_related('follower')
+        followers = Follow.objects.filter(followee=user).select_related('follower')
         return User.objects.filter(id__in=followers.values_list('follower_id', flat=True))
 
 class FollowingListView(APIView):
@@ -443,9 +446,9 @@ class FollowingListView(APIView):
     def get(self, request, *args, **kwargs):
         user = request.user
 
-        followings = Follow.objects.filter(follower=user).select_related('followed')
+        followings = Follow.objects.filter(follower=user).select_related('followee')
 
-        followings_data = [{'id': follow.followed.id, 'username': follow.followed.username} for follow in followings]
+        followings_data = [{'id': follow.followee.id, 'username': follow.followee.username} for follow in followings]
 
         return Response({'results': followings_data})  # DRF Response obyekti bilan qaytish
 

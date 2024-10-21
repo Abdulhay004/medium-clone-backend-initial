@@ -14,4 +14,8 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ('username', 'email', 'first_name', 'last_name', 'middle_name')
     list_filter = ('last_login', 'date_joined', 'is_staff', 'is_superuser', 'is_active')
 
-admin.site.register(Follow)
+
+class FollowAdmin(admin.ModelAdmin):
+    list_display = ('follower', 'followee', 'username', 'first_name', 'last_name', 'middle_name', 'email', 'avatar')
+    search_fields = ('follower__username', 'followee__username')
+admin.site.register(Follow, FollowAdmin)
