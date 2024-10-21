@@ -77,6 +77,7 @@ def test_unpin_article(api_client, tokens, article_data):
     client.post(f'/articles/{article.id}/pin/')
 
     response = client.delete(f'/articles/{article.id}/unpin/')
+    print(response.data)
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
     response = client.delete(f'/articles/{article.id}/unpin/')

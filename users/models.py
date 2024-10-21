@@ -127,4 +127,8 @@ class Follow(models.Model):
     def __str__(self):
         return f"{self.follower}"
 
+class Pin(models.Model):
+    archive = models.BooleanField(default=False)
+    pinned = models.BooleanField(default=False)
+
 
