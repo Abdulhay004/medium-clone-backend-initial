@@ -42,25 +42,20 @@ class ArticlesView(viewsets.ModelViewSet):
             article.archived = True  # Убедитесь, что у вас есть поле archived в модели Article
             article.save()
             return Response({"detail": "Maqola arxivlandi."}, status=status.HTTP_200_OK)
-        elif action == 'pin' and article.pinned == False:
-            article.pinned = True  # Убедитесь, что у вас есть поле pinned в модели Article
-            article.save()
-            return Response({"detail": "Maqola pin qilindi."}, status=status.HTTP_200_OK)
-        elif action == 'pin' and article.pinned == True:
-            article.pinned = False
-            article.save()
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        return Response({"detail": "Noto'g'ri harakat."}, status=status.HTTP_400_BAD_REQUEST)
+        elif action == 'pin':
+            pin, created = Pin.objects.get_or_create(user=request.user, article=article)
+            if created:
+                return Response({"detail": "Maqola pin qilindi."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"detail": "Maqola allaqachon pin qilingan."}, status=status.HTTP_400_BAD_REQUEST)
     def delete(self, request, id):
         try:
             article = Article.objects.get(id=id)
-            if not article.pinned:
-                return Response({"detail": "Maqola topilmadi.."}, status=status.HTTP_404_NOT_FOUND)
-            article.pinned = False
-            article.save()
+            pin = Pin.objects.get(user=request.user, article=article)
+            pin.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        except Article.DoesNotExist:
-            return Response({"detail": "Maqola topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+        except Pin.DoesNotExist:
+            return Response({"detail": "Maqola topilmadi.."}, status=status.HTTP_404_NOT_FOUND)
 
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)

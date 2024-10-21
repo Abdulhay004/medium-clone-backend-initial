@@ -61,6 +61,7 @@ def test_notifications(notification_data_factory, api_client, tokens):
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
         notification.refresh_from_db()
+
         assert notification.read_at is not None
 
         response = client.get('/users/notifications/')

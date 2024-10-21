@@ -6,6 +6,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django_redis import get_redis_connection
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.views import View
@@ -13,7 +14,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from .enums import TokenType
 from .services import TokenService, UserService, SendEmailService
 import random
-from .models import CustomUser, Author, Follow
+from .models import CustomUser, Author, Follow, Notification
 
 from rest_framework import status, permissions, parsers, exceptions, generics
 from rest_framework.generics import ListAPIView
@@ -29,7 +30,8 @@ from .serializers import (
     ResetPasswordResponseSerializer,
     ForgotPasswordVerifyResponseSerializer,
     ForgotPasswordResponseSerializer,
-    RecommendationSerializer, FollowSerializer)
+    RecommendationSerializer, FollowSerializer,
+    NotificationSerializer)
 from .services import TokenService, UserService, SendEmailService, OTPService
 
 from django.contrib.auth.hashers import make_password
@@ -452,8 +454,35 @@ class FollowingListView(APIView):
 
         return Response({'results': followings_data})  # DRF Response obyekti bilan qaytish
 
+class UserNotificationView(generics.ListAPIView):
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        user = self.request.user
+        return Notification.objects.filter(user=user)
 
+class UserNotificationDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        queryset = Notification.objects.filter(user=self.request.user)
+        return queryset
 
+    def patch(self, request, *args, **kwargs):
+        try:
+            notification = self.get_object()
 
+            # Yangilash
+            serializer = self.get_serializer(notification, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            # Yangilashdan so'ng ob'ektni o'chirish
+            notification.delete()
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except Notification.DoesNotExist:
+            return Response({"detail": "Notification not found."}, status=status.HTTP_404_NOT_FOUND)

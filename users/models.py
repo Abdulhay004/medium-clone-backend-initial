@@ -128,7 +128,21 @@ class Follow(models.Model):
         return f"{self.follower}"
 
 class Pin(models.Model):
-    archive = models.BooleanField(default=False)
-    pinned = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        unique_together = ('user', 'article')  # Уникальная пара: пользователь-статья
+    def __str__(self):
+        return f"{self.user.username} pinned {self.article.title}"
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+    read_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.message
 
 
