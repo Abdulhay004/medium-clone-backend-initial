@@ -128,6 +128,13 @@ class Report(models.Model):
     def __str__(self):
         return f"{self.user.username} reported {self.article.title}"
 
+class FAQ(models.Model):
+    question = models.CharField(max_length=255)
+    answer = models.TextField()
+
+    def __str__(self):
+        return self.question
+
 
 
 

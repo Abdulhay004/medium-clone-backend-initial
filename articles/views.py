@@ -1,7 +1,7 @@
 from array import array
 
 from rest_framework import viewsets , status, mixins, generics, serializers
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Topic, TopicFollow
@@ -16,10 +16,10 @@ User = get_user_model()
 from .filters import ArticleFilter
 
 from users.models import Recommendation, ReadingHistory, Pin
-from .models import Article, Comment, Favorite, Clap, Report
+from .models import Article, Comment, Favorite, Clap, Report, FAQ
 from .serializers import (ArticleCreateSerializer, ArticleDetailSerializer,
                           CommentSerializer, ArticleDetailCommentsSerializer,
-                          ClapSerializer)
+                          ClapSerializer, FAQSerializer)
 
 
 class ArticleDetailView(generics.RetrieveAPIView):
@@ -360,3 +360,8 @@ class ReportArticleView(generics.CreateAPIView):
                 return Response({"detail": "Maqola bir nechta shikoyatlar tufayli olib tashlandi."}, status=status.HTTP_200_OK)
 
         return Response({"detail": "Shikoyat yuborildi."}, status=status.HTTP_201_CREATED)
+
+class FAQListView(generics.ListAPIView):
+    queryset = FAQ.objects.all()
+    serializer_class = FAQSerializer
+    permission_classes = [AllowAny]
