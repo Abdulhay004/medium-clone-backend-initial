@@ -141,11 +141,6 @@ class UsersMe(generics.RetrieveAPIView, generics.UpdateAPIView):
         return UserSerializer
 
     def patch(self, request, *args, **kwargs):
-        redis_conn = get_redis_connection('default')
-        redis_conn.set('test_key', 'test_value', ex=3600)
-        cached_value = redis_conn.get('test_key')
-        print(cached_value)
-
         return super().partial_update(request, *args, **kwargs)
 
 @extend_schema_view(
