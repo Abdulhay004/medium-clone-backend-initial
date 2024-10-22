@@ -342,7 +342,11 @@ class ReportArticleView(generics.CreateAPIView):
 
         # Check if the user has already reported this article
         if Report.objects.filter(article=article, user=user).exists():
-            return Response({"detail": "Ushbu maqola allaqachon shikoyat qilingan."}, status=status.HTTP_400_BAD_REQUEST)
+            if Article.objects.filter(id=article_id, status='publish').exists():
+                data = ["Ushbu maqola allaqachon shikoyat qilingan."]
+            else:
+                data = {"detail": "Ushbu maqola allaqachon shikoyat qilingan."}
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
         # Create a new report and check report count
         with transaction.atomic():

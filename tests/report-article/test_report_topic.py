@@ -74,6 +74,7 @@ def test_report_article(api_client, tokens, report_data, article_status, expecte
         if isinstance(response.data, dict):
             assert response.data.get('detail') == "Ushbu maqola allaqachon shikoyat qilingan."
         elif isinstance(response.data, list):
+            print(response.data)
             assert response.data[0] == "Ushbu maqola allaqachon shikoyat qilingan."
         else:
             pytest.fail("Response data is not in expected format")
@@ -102,7 +103,7 @@ def test_report_article_twice(api_client, tokens, report_data):
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     print(response.data)
-    assert response.data["detail"] == "Ushbu maqola allaqachon shikoyat qilingan."
+    assert response.data[0] == "Ushbu maqola allaqachon shikoyat qilingan."
 
 
 @pytest.mark.django_db
