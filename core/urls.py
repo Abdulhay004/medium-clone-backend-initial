@@ -38,7 +38,7 @@ def is_superuser(user):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path('health/', lambda _: JsonResponse({'detail': 'Healthy'}), name='health'),
+    path('', lambda _: JsonResponse({'detail': 'Healthy'}), name='health'),
     path('users/', include('users.urls')),
     path('articles/', include('articles.urls')),
     path('schema/', user_passes_test(is_superuser)(SpectacularAPIView.as_view()), name='schema'),
