@@ -336,9 +336,9 @@ class ReportArticleView(generics.CreateAPIView):
 
         # Get the article
         try:
-            article = Article.objects.get(id=article_id)
+            article = Article.objects.get(id=article_id, status='publish')
         except Article.DoesNotExist:
-            return Response({"detail": "Maqola topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "No Article matches the given query."}, status=status.HTTP_404_NOT_FOUND)
 
         # Check if the user has already reported this article
         if Report.objects.filter(article=article, user=user).exists():
@@ -350,7 +350,7 @@ class ReportArticleView(generics.CreateAPIView):
             report_count = Report.objects.filter(article=article).count()
 
             # If report count exceeds 3, mark the article as trash
-            if report_count >= 3:
+            if report_count >= 4:
                 article.status = 'trash'
                 article.save()
                 return Response({"detail": "Maqola bir nechta shikoyatlar tufayli olib tashlandi."}, status=status.HTTP_200_OK)
