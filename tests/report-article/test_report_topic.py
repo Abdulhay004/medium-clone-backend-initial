@@ -56,6 +56,7 @@ def test_report_article(api_client, tokens, report_data, article_status, expecte
     client = api_client(token=access)
 
     response = client.post(f'/articles/{article.id}/report/')
+    print(response.data)
 
     assert response.status_code == expected_status
     print("response data", response.data['detail'])

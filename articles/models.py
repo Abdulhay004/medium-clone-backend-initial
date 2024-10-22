@@ -117,6 +117,16 @@ class Favorite(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.article.title}"
 
+class Report(models.Model):
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='reports')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('article', 'user')  # Ensure a user can only report an article once
+
+    def __str__(self):
+        return f"{self.user.username} reported {self.article.title}"
 
 
 

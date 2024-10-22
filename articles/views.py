@@ -1,3 +1,4 @@
+from array import array
 
 from rest_framework import viewsets , status, mixins, generics, serializers
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -8,13 +9,14 @@ from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth import get_user_model
 from django.http import Http404
+from django.db import transaction
 
 User = get_user_model()
 
 from .filters import ArticleFilter
 
 from users.models import Recommendation, ReadingHistory, Pin
-from .models import Article, Comment, Favorite, Clap
+from .models import Article, Comment, Favorite, Clap, Report
 from .serializers import (ArticleCreateSerializer, ArticleDetailSerializer,
                           CommentSerializer, ArticleDetailCommentsSerializer,
                           ClapSerializer)
@@ -324,3 +326,33 @@ class ClapView(generics.GenericAPIView):
             return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class ReportArticleView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        article_id = self.kwargs.get('id')
+        user = request.user
+
+        # Get the article
+        try:
+            article = Article.objects.get(id=article_id)
+        except Article.DoesNotExist:
+            return Response({"detail": "Maqola topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check if the user has already reported this article
+        if Report.objects.filter(article=article, user=user).exists():
+            return Response({"detail": "Ushbu maqola allaqachon shikoyat qilingan."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create a new report and check report count
+        with transaction.atomic():
+            Report.objects.create(article=article, user=user)
+            report_count = Report.objects.filter(article=article).count()
+
+            # If report count exceeds 3, mark the article as trash
+            if report_count >= 3:
+                article.status = 'trash'
+                article.save()
+                return Response({"detail": "Maqola bir nechta shikoyatlar tufayli olib tashlandi."}, status=status.HTTP_200_OK)
+
+        return Response({"detail": "Shikoyat yuborildi."}, status=status.HTTP_201_CREATED)
