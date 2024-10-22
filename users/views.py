@@ -460,27 +460,29 @@ class UserNotificationView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Notification.objects.filter(user=user)
+        return Notification.objects.filter(user=user, is_active=True)
 
 class UserNotificationDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = NotificationSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Notification.objects.filter(user=self.request.user)
+        queryset = Notification.objects.filter(user=self.request.user, is_active=True)
         return queryset
 
     def patch(self, request, *args, **kwargs):
         try:
             notification = self.get_object()
 
-            # Yangilash
-            serializer = self.get_serializer(notification, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+        # Check if the request data contains the 'read' field
+            if 'read' in request.data:
+                if request.data['read']:
+                    notification.read_at = timezone.now()  # Mark as read by setting read_at to current time
+                else:
+                    notification.read_at = None  # Optionally handle marking as unread
 
-            # Yangilashdan so'ng ob'ektni o'chirish
-            notification.delete()
+            notification.is_active = False  # Optionally mark as inactive
+            notification.save()  # Save changes
 
             return Response(status=status.HTTP_204_NO_CONTENT)
 
