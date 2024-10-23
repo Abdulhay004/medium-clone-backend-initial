@@ -65,8 +65,8 @@ class CustomUser(AbstractUser):
 
         constraints = [
             models.CheckConstraint(
-                condition=models.Q(birth_year__gt=settings.BIRTH_YEAR_MIN) &
-                          models.Q(birth_year__lt=settings.BIRTH_YEAR_MAX),
+                check=models.Q(birth_year__gt=settings.BIRTH_YEAR_MIN) &
+                      models.Q(birth_year__lt=settings.BIRTH_YEAR_MAX),
                 name='check_birth_year_range'
             )
         ]
