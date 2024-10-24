@@ -59,17 +59,17 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # REDIS_PORT = config('REDIS_PORT', default='6379')
 # REDIS_DB = config('REDIS_DB', default='1')
 
-REDIS_URL = config('REDIS_URL')
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': REDIS_URL,
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        }
-    }
-}
+# REDIS_URL = config('REDIS_URL')
+#
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': REDIS_URL,
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#         }
+#     }
+# }
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -108,7 +108,7 @@ MIDDLEWARE = [
 #     }
 # }
 
-logger.info(f"Using redis | URL: {REDIS_URL}")
+# logger.info(f"Using redis | URL: {REDIS_URL}")
 
 ROOT_URLCONF = "core.urls"
 
