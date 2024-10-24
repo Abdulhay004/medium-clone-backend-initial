@@ -8,7 +8,7 @@ from .custom_logging import InterceptHandler
 # Build paths inside the e e this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start devlon ttins - unuitable for
+# Quick-start devlon tins - unuitable for
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 from decouple import config
