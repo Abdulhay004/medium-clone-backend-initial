@@ -1,1 +1,0 @@
-name = "pypi_install"
