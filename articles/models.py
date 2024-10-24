@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from ckeditor.fields import RichTextField
+# from ckeditor.fields import RichTextField
 from django.utils.text import slugify
 
 User = settings.AUTH_USER_MODEL
@@ -35,7 +35,7 @@ class Article(models.Model):
     title = models.CharField(max_length=200)
     author = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='article_set')
     summary = models.TextField()
-    content = RichTextField()
+    content = models.TextField()
     slug = models.SlugField(unique=True, blank=True)
     STATUS_CHOICES = [
         ('active', 'ACTIVE'),
