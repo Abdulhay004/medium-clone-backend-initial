@@ -17,7 +17,7 @@ SECRET_KEY = config('SECRET_KEY', default='hjg^&%**%%^*GHVGJHGKJGKH')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['127.0.0.1']
 
 # "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI4NDI2NjE4LCJpYXQiOjE3Mjg0MjMwMTgsImp0aSI6IjM1YzAxOWJlN2EyMzQ1NGY4NmFhYjAzOTA3NDQ2NTM5IiwidXNlcl9pZCI6MX0.oYg9LFT2MngrkEUdCGgBs1Mh9Ta0owdKscI48Nmmk7U"
 
@@ -50,7 +50,7 @@ LOCAL_APPS = [
 
 INSTALLED_APPS = DJANGO_APPS + EXTERNAL_APPS + LOCAL_APPS
 
-WSGI_APPLICATION = "core.wsgi.app"
+WSGI_APPLICATION = "core.wsgi.application"
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
