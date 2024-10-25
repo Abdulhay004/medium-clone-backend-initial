@@ -51,6 +51,8 @@ class Article(models.Model):
     is_recommend = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_published = models.BooleanField(default=False)
+    archive = models.BooleanField(default=False)
+
 
 
     def save(self, *args, **kwargs):
