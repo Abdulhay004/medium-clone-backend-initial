@@ -25,6 +25,7 @@ def file_upload(instance, filename):
 
 class CustomUser(AbstractUser):
     """  This model represents a custom user. """
+    # article = models.Fore
     name = models.CharField(max_length=100, blank=True, null=True)
     title = models.CharField(max_length=100, blank=True, null=True)
     middle_name = models.CharField(max_length=30, blank=True, null=True)
@@ -65,8 +66,8 @@ class CustomUser(AbstractUser):
 
         constraints = [
             models.CheckConstraint(
-                condition=models.Q(birth_year__gt=settings.BIRTH_YEAR_MIN) &
-                          models.Q(birth_year__lt=settings.BIRTH_YEAR_MAX),
+                check=models.Q(birth_year__gt=settings.BIRTH_YEAR_MIN) &
+                      models.Q(birth_year__lt=settings.BIRTH_YEAR_MAX),
                 name='check_birth_year_range'
             )
         ]
@@ -113,18 +114,37 @@ class ReadingHistory(models.Model):
 
 class Follow(models.Model):
     follower = models.ForeignKey(User, related_name='following', on_delete=models.CASCADE, null=True)
-    followed = models.ForeignKey(User, related_name='followers', on_delete=models.CASCADE, null=True)
+    followee = models.ForeignKey(User, related_name='followers', on_delete=models.CASCADE, null=True)
     username = models.CharField(max_length=150, null=True)
     first_name = models.CharField(max_length=30, null=True)
     last_name = models.CharField(max_length=30, null=True)
     middle_name = models.CharField(max_length=30, blank=True, null=True)
     email = models.EmailField(null=True)
-    avatar = models.URLField(null=True)
+    avatar = models.URLField(max_length=500, null=True)
     class Meta:
         db_table = 'follow'
-        unique_together = ('follower', 'followed')
+        unique_together = ('follower', 'followee')
 
     def __str__(self):
         return f"{self.follower}"
+
+class Pin(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        unique_together = ('user', 'article')  # Уникальная пара: пользователь-статья
+    def __str__(self):
+        return f"{self.user.username} pinned {self.article.title}"
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+    read_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.message
 
 

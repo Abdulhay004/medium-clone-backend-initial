@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from .models import Recommendation, Follow
+from .models import Recommendation, Follow, Notification
 from articles.models import Article
 
 from .errors import BIRTH_YEAR_ERROR_MSG
@@ -161,4 +161,9 @@ class FollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Follow
         fields = ['id', 'username', 'first_name', 'last_name', 'middle_name', 'email', 'avatar']
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ['id', 'message', 'read_at', 'created_at']
 

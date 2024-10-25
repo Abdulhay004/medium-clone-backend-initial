@@ -1,6 +1,6 @@
 
 from rest_framework import serializers, generics
-from .models import Topic, Article, Clap, User, Author, Comment
+from .models import Topic, Article, Clap, User, Author, Comment, FAQ
 
 class TopicSerializer(serializers.ModelSerializer):
     class Meta:
@@ -104,6 +104,11 @@ class ClapSerializer(serializers.ModelSerializer):
     class Meta:
         model = Clap
         fields = ['user', 'article', 'count']
+
+class FAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FAQ
+        fields = ['id', 'question', 'answer']
 
 
 

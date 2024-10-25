@@ -6,14 +6,9 @@ from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django_redis import get_redis_connection
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse, HttpResponse
-from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .enums import TokenType
-from .services import TokenService, UserService, SendEmailService
-import random
-from .models import CustomUser, Author, Follow
+from django.utils import timezone
+from .models import CustomUser, Author, Follow, Notification
 
 from rest_framework import status, permissions, parsers, exceptions, generics
 from rest_framework.generics import ListAPIView
@@ -29,7 +24,7 @@ from .serializers import (
     ResetPasswordResponseSerializer,
     ForgotPasswordVerifyResponseSerializer,
     ForgotPasswordResponseSerializer,
-    RecommendationSerializer, FollowSerializer)
+    RecommendationSerializer, FollowSerializer, NotificationSerializer)
 from .services import TokenService, UserService, SendEmailService, OTPService
 
 from django.contrib.auth.hashers import make_password
@@ -449,6 +444,41 @@ class FollowingListView(APIView):
 
         return Response({'results': followings_data})  # DRF Response obyekti bilan qaytish
 
+
+class UserNotificationView(generics.ListAPIView):
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Notification.objects.filter(user=user, is_active=True)
+
+class UserNotificationDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Notification.objects.filter(user=self.request.user, is_active=True)
+        return queryset
+
+    def patch(self, request, *args, **kwargs):
+        try:
+            notification = self.get_object()
+
+        # Check if the request data contains the 'read' field
+            if 'read' in request.data:
+                if request.data['read']:
+                    notification.read_at = timezone.now()  # Mark as read by setting read_at to current time
+                else:
+                    notification.read_at = None  # Optionally handle marking as unread
+
+            notification.is_active = False  # Optionally mark as inactive
+            notification.save()  # Save changes
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except Notification.DoesNotExist:
+            return Response({"detail": "Notification not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
 
