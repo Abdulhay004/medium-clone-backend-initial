@@ -5,10 +5,10 @@ from loguru import logger
 import sys
 from .custom_logging import InterceptHandler
 
-# Build paths insid t e e this: BASE_DIR / 'subdir'.
+# Build paths inside the e e this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start devlon tis - unuitable for
+# Quick-start devlopnt ttings - unuitable for
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 from decouple import config
@@ -50,30 +50,24 @@ LOCAL_APPS = [
 
 INSTALLED_APPS = DJANGO_APPS + EXTERNAL_APPS + LOCAL_APPS
 
-WSGI_APPLICATION = "core.wsgi.application"
+REDIS_HOST = config('REDIS_HOST', default='localhost')
+REDIS_PORT = config('REDIS_PORT', default='6379')
+REDIS_DB = config('REDIS_DB', default='1')
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+REDIS_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}'
 
-
-# REDIS_HOST = config('REDIS_HOST', default='localhost')
-# REDIS_PORT = config('REDIS_PORT', default='6379')
-# REDIS_DB = config('REDIS_DB', default='1')
-
-# REDIS_URL = config('REDIS_URL')
-#
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django_redis.cache.RedisCache',
-#         'LOCATION': REDIS_URL,
-#         'OPTIONS': {
-#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-#         }
-#     }
-# }
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': REDIS_URL,
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    'whitenoise.middleware.WhiteNoiseMiddleware',      # whitenoise
     "django.contrib.sessions.middleware.SessionMiddleware",
     'core.middlewares.CustomLocaleMiddleware',  # custom middleware uchun
 	'core.middlewares.LogRequestMiddleware',
@@ -85,30 +79,30 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#         'intercept': {
-#             '()': InterceptHandler,
-#             'level': 0,
-#         },
-#         'file': {
-#             'level': 'DEBUG',
-#             'class': 'logging.FileHandler',
-#             'filename': 'django.log',
-#         },
-#     },
-#     'loggers': {
-#         '': {
-#             'handlers': ['intercept', 'file'],
-#             'level': "DEBUG",
-#             'propagate': True,
-#         },
-#     }
-# }
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'intercept': {
+            '()': InterceptHandler,
+            'level': 0,
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'django.log',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['intercept', 'file'],
+            'level': "DEBUG",
+            'propagate': True,
+        },
+    }
+}
 
-# logger.info(f"Using redis | URL: {REDIS_URL}")
+logger.info(f"Using redis | URL: {REDIS_URL}")
 
 ROOT_URLCONF = "core.urls"
 
@@ -195,7 +189,7 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=10),
 }
 
-# WSGI_APPLICATION = "core.wsgi.application"
+WSGI_APPLICATION = "core.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -264,8 +258,7 @@ LOCALE_PATHS = [
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = BASE_DIR / "static"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media"

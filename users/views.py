@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from django.utils import timezone
 from .models import CustomUser, Author, Follow, Notification
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from rest_framework import status, permissions, parsers, exceptions, generics
 from rest_framework.generics import ListAPIView
@@ -345,27 +346,47 @@ class RecommendationView(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class PopularAuthorsView(ListAPIView):
+class PopularAuthorsView(LoginRequiredMixin, ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
 
+
+    def get(self, request, *args, **kwargs):
+        # Filter active users who have published articles
+        active_users_with_articles = CustomUser.objects.filter(
+            article_set__is_published=True,
+            is_active=True
+        ).distinct()
+
+        # Prepare the response data
+        results = []
+        for user in active_users_with_articles:
+            user_data = {
+                'id': user.id,
+                'first_name': user.first_name,
+                'email': user.email,
+                'avatar': user.avatar.url if user.avatar else None  # Adjust according to your model
+            }
+            results.append(user_data)
+
+        return Response({
+            'count': len(results),
+            'next': None,
+            'previous': None,
+            'results': results
+        }, status=status.HTTP_200_OK)
 
     def get_queryset(self):
         return (
             User.objects.filter(is_active=True)
             .annotate(total_reads=Sum('article_set__reads_count'))
-            .order_by('-total_reads')[:5]
+            .order_by('-total_reads')[:5]  # Get top 5 authors by reads count
         )
-
-    def list(self, request):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({
-            'count': len(queryset),
-            'next': None,
-            'previous': None,
-            'results': serializer.data
-        }, status=status.HTTP_200_OK)
+    def get_permissions(self):
+       if self.request.user.is_authenticated:
+           return super().get_permissions()
+       else:
+           return [IsAuthenticated()]  # or return an empty list for no permissions
 
 
 class AuthorFollowView(APIView):
