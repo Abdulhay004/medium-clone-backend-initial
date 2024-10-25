@@ -5,14 +5,15 @@ from django.contrib.auth import authenticate, update_session_auth_hash
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
-<<<<<<< HEAD
 from django_redis import get_redis_connection
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse, HttpResponse
+from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
-=======
-from rest_framework.authentication import TokenAuthentication
->>>>>>> origin/main
-from django.utils import timezone
-from .models import CustomUser, Author, Follow, Notification
+from .enums import TokenType
+from .services import TokenService, UserService, SendEmailService
+import random
+from .models import CustomUser, Author, Follow
 
 from rest_framework import status, permissions, parsers, exceptions, generics
 from rest_framework.generics import ListAPIView
@@ -28,12 +29,7 @@ from .serializers import (
     ResetPasswordResponseSerializer,
     ForgotPasswordVerifyResponseSerializer,
     ForgotPasswordResponseSerializer,
-<<<<<<< HEAD
-    RecommendationSerializer, FollowSerializer, NotificationSerializer)
-=======
-    RecommendationSerializer, FollowSerializer,
-    NotificationSerializer, UserSerializer2)
->>>>>>> origin/main
+    RecommendationSerializer, FollowSerializer)
 from .services import TokenService, UserService, SendEmailService, OTPService
 
 from django.contrib.auth.hashers import make_password
@@ -143,6 +139,11 @@ class UsersMe(generics.RetrieveAPIView, generics.UpdateAPIView):
         return UserSerializer
 
     def patch(self, request, *args, **kwargs):
+        redis_conn = get_redis_connection('default')
+        redis_conn.set('test_key', 'test_value', ex=3600)
+        cached_value = redis_conn.get('test_key')
+        print(cached_value)
+
         return super().partial_update(request, *args, **kwargs)
 
 @extend_schema_view(
@@ -354,46 +355,57 @@ class RecommendationView(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class PopularAuthorsView(ListAPIView):
+class PopularAuthorsView(LoginRequiredMixin, ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
 
+
+    def get(self, request, *args, **kwargs):
+        # Filter active users who have published articles
+        active_users_with_articles = CustomUser.objects.filter(
+            article_set__is_published=True,
+            is_active=True
+        ).distinct()
+
+        # Prepare the response data
+        results = []
+        for user in active_users_with_articles:
+            user_data = {
+                'id': user.id,
+                'first_name': user.first_name,
+                'email': user.email,
+                'avatar': user.avatar.url if user.avatar else None  # Adjust according to your model
+            }
+            results.append(user_data)
+
+        return Response({
+            'count': len(results),
+            'next': None,
+            'previous': None,
+            'results': results
+        }, status=status.HTTP_200_OK)
 
     def get_queryset(self):
         return (
             User.objects.filter(is_active=True)
             .annotate(total_reads=Sum('article_set__reads_count'))
-            .order_by('-total_reads')[:5]
+            .order_by('-total_reads')[:5]  # Get top 5 authors by reads count
         )
-
-    def list(self, request):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({
-            'count': len(queryset),
-            'next': None,
-            'previous': None,
-            'results': serializer.data
-        }, status=status.HTTP_200_OK)
-
 
 class AuthorFollowView(APIView):
     # queryset = Follow.objects.all()
     # serializer_class = FollowSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, id):
-        return Response({'GetOK!'}, status=status.HTTP_200_OK)
-
     def post(self, request, id):
         try:
             followed_user = User.objects.get(id=id)
-            if Follow.objects.filter(follower=request.user, followee=followed_user).exists():
-                return Response({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=status.HTTP_200_OK)
+            if Follow.objects.filter(follower=request.user, followed=followed_user).exists():
+                return Response({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=status.HTTP_400_BAD_REQUEST)
 
             Follow.objects.create(
             follower=request.user,
-            followee=followed_user,
+            followed=followed_user,
             username=followed_user.username,
             first_name=followed_user.first_name,
             last_name=followed_user.last_name,
@@ -408,13 +420,13 @@ class AuthorFollowView(APIView):
     def delete(self, request, id):
         try:
             followed_user = User.objects.get(id=id)
-            follow_instance = Follow.objects.get(follower=request.user, followee=followed_user)
+            follow_instance = Follow.objects.get(follower=request.user, followed=followed_user)
             follow_instance.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except User.DoesNotExist:
             return Response({"detail": "Foydalanuvchi topilmadi."}, status=status.HTTP_404_NOT_FOUND)
         except Follow.DoesNotExist:
-            return Response({"detail": "Siz ushbu foydalanuvchini kuzatmayapsiz."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "Siz ushbu foydalanuvchini kuzatmayapsiz."}, status=status.HTTP_400_BAD_REQUEST)
 
 class FollowersListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
@@ -422,7 +434,7 @@ class FollowersListView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        followers = Follow.objects.filter(followee=user).select_related('follower')
+        followers = Follow.objects.filter(followed=user).select_related('follower')
         return User.objects.filter(id__in=followers.values_list('follower_id', flat=True))
 
 class FollowingListView(APIView):
@@ -431,81 +443,14 @@ class FollowingListView(APIView):
     def get(self, request, *args, **kwargs):
         user = request.user
 
-        followings = Follow.objects.filter(follower=user).select_related('followee')
+        followings = Follow.objects.filter(follower=user).select_related('followed')
 
-        followings_data = [{'id': follow.followee.id, 'username': follow.followee.username} for follow in followings]
+        followings_data = [{'id': follow.followed.id, 'username': follow.followed.username} for follow in followings]
 
         return Response({'results': followings_data})  # DRF Response obyekti bilan qaytish
 
-class UserNotificationView(generics.ListAPIView):
-    serializer_class = NotificationSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
-<<<<<<< HEAD
-class UserNotificationView(generics.ListAPIView):
-    serializer_class = NotificationSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        user = self.request.user
-        return Notification.objects.filter(user=user, is_active=True)
 
-class UserNotificationDetailView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = NotificationSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        queryset = Notification.objects.filter(user=self.request.user, is_active=True)
-        return queryset
 
-    def patch(self, request, *args, **kwargs):
-        try:
-            notification = self.get_object()
-
-        # Check if the request data contains the 'read' field
-            if 'read' in request.data:
-                if request.data['read']:
-                    notification.read_at = timezone.now()  # Mark as read by setting read_at to current time
-                else:
-                    notification.read_at = None  # Optionally handle marking as unread
-
-            notification.is_active = False  # Optionally mark as inactive
-            notification.save()  # Save changes
-
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-        except Notification.DoesNotExist:
-            return Response({"detail": "Notification not found."}, status=status.HTTP_404_NOT_FOUND)
-
-=======
-    def get_queryset(self):
-        user = self.request.user
-        return Notification.objects.filter(user=user, is_active=True)
->>>>>>> origin/main
-
-class UserNotificationDetailView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = NotificationSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        queryset = Notification.objects.filter(user=self.request.user, is_active=True)
-        return queryset
-
-    def patch(self, request, *args, **kwargs):
-        try:
-            notification = self.get_object()
-
-        # Check if the request data contains the 'read' field
-            if 'read' in request.data:
-                if request.data['read']:
-                    notification.read_at = timezone.now()  # Mark as read by setting read_at to current time
-                else:
-                    notification.read_at = None  # Optionally handle marking as unread
-
-            notification.is_active = False  # Optionally mark as inactive
-            notification.save()  # Save changes
-
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-        except Notification.DoesNotExist:
-            return Response({"detail": "Notification not found."}, status=status.HTTP_404_NOT_FOUND)

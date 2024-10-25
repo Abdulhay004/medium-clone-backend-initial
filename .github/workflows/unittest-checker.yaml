@@ -33,7 +33,7 @@ jobs:
       - name: Checkout original repository
         uses: actions/checkout@v3
         with:
-          repository: Mohirdevelopers/medium-clone-backend-initial-back-old
+          repository: Mohirdevelopers/medium-clone-backend-initial-old
           path: original-repo
           ref: main
           fetch-depth: 0
