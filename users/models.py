@@ -25,6 +25,7 @@ def file_upload(instance, filename):
 
 class CustomUser(AbstractUser):
     """  This model represents a custom user. """
+    # article = models.Fore
     name = models.CharField(max_length=100, blank=True, null=True)
     title = models.CharField(max_length=100, blank=True, null=True)
     middle_name = models.CharField(max_length=30, blank=True, null=True)
