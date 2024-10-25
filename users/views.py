@@ -346,12 +346,8 @@ class RecommendationView(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class PopularAuthorsView(LoginRequiredMixin, ListAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = UserSerializer
-
-
-    def get(self, request, *args, **kwargs):
+class PopularAuthorsView(APIView):
+    def get(self, request):
         # Filter active users who have published articles
         active_users_with_articles = CustomUser.objects.filter(
             article_set__is_published=True,
@@ -375,18 +371,6 @@ class PopularAuthorsView(LoginRequiredMixin, ListAPIView):
             'previous': None,
             'results': results
         }, status=status.HTTP_200_OK)
-
-    def get_queryset(self):
-        return (
-            User.objects.filter(is_active=True)
-            .annotate(total_reads=Sum('article_set__reads_count'))
-            .order_by('-total_reads')[:5]  # Get top 5 authors by reads count
-        )
-    def get_permissions(self):
-       if self.request.user.is_authenticated:
-           return super().get_permissions()
-       else:
-           return [IsAuthenticated()]  # or return an empty list for no permissions
 
 
 class AuthorFollowView(APIView):
