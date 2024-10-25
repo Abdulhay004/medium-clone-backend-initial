@@ -5,7 +5,7 @@ on:
       tests_path:
         description: 'Tests path'
         required: false
-        default: ''
+        default-- .github/workflows/unittest-checker.yaml: ''
       github_feedback_id:
         description: 'Github feedback id'
         required: true
@@ -15,7 +15,7 @@ jobs:
     name: Deploy and run tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
-
+-- .github/workflows/unittest-checker.yaml
     steps:
       - name: Clean environment
         run: |
