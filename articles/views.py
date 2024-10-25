@@ -1,3 +1,4 @@
+from array import array
 
 from rest_framework import viewsets , status, mixins, generics, serializers
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -14,8 +15,8 @@ User = get_user_model()
 
 from .filters import ArticleFilter
 
-from users.models import Recommendation, ReadingHistory
-from .models import Article, Comment, Favorite, Clap
+from users.models import Recommendation, ReadingHistory, Pin
+from .models import Article, Comment, Favorite, Clap, Report, FAQ
 from .serializers import (ArticleCreateSerializer, ArticleDetailSerializer,
                           CommentSerializer, ArticleDetailCommentsSerializer,
                           ClapSerializer, FAQSerializer)
@@ -33,6 +34,30 @@ class ArticlesView(viewsets.ModelViewSet):
 
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ArticleFilter  # Set the filter class
+
+    def post(self, request, id, action):
+        try:
+            article = Article.objects.get(id=id)
+        except Article.DoesNotExist:
+            return Response({"detail": "Maqola topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+        if action == 'archive':
+            article.archived = True  # Убедитесь, что у вас есть поле archived в модели Article
+            article.save()
+            return Response({"detail": "Maqola arxivlandi."}, status=status.HTTP_200_OK)
+        elif action == 'pin':
+            pin, created = Pin.objects.get_or_create(user=request.user, article=article)
+            if created:
+                return Response({"detail": "Maqola pin qilindi."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"detail": "Maqola allaqachon pin qilingan."}, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, id):
+        try:
+            article = Article.objects.get(id=id)
+            pin = Pin.objects.get(user=request.user, article=article)
+            pin.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Pin.DoesNotExist:
+            return Response({"detail": "Maqola topilmadi.."}, status=status.HTTP_404_NOT_FOUND)
 
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
@@ -302,7 +327,10 @@ class ClapView(generics.GenericAPIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
 class ReportArticleView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
 

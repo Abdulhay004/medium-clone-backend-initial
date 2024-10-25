@@ -52,6 +52,10 @@ class Article(models.Model):
     is_active = models.BooleanField(default=True)
     is_published = models.BooleanField(default=False)
     archive = models.BooleanField(default=False)
+<<<<<<< HEAD
+=======
+    pinned = models.BooleanField(default=False)
+>>>>>>> origin/main
 
     def save(self, *args, **kwargs):
         if not self.slug:

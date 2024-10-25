@@ -59,8 +59,8 @@ def test_notifications(notification_data_factory, api_client, tokens):
         # Test updating a notification to mark it as read
         response = client.patch(f'/users/notifications/{notification.id}/', data={'read': True})
         assert response.status_code == status.HTTP_204_NO_CONTENT
-
         notification.refresh_from_db()
+
         assert notification.read_at is not None
 
         response = client.get('/users/notifications/')
