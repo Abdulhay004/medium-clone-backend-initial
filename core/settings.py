@@ -5,7 +5,7 @@ from loguru import logger
 import sys
 from .custom_logging import InterceptHandler
 
-# Build paths insid th e e this: BASE_DIR / 'subdir'.
+# Build paths insid t e e this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start devlon tis - unuitable for
