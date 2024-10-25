@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from ckeditor.fields import RichTextField
+# from ckeditor.fields import RichTextField
 from django.utils.text import slugify
 
 User = settings.AUTH_USER_MODEL
@@ -35,7 +35,7 @@ class Article(models.Model):
     title = models.CharField(max_length=200)
     author = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='article_set')
     summary = models.TextField()
-    content = RichTextField()
+    content = models.TextField()
     slug = models.SlugField(unique=True, blank=True)
     STATUS_CHOICES = [
         ('active', 'ACTIVE'),
@@ -51,6 +51,8 @@ class Article(models.Model):
     is_recommend = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_published = models.BooleanField(default=False)
+    archive = models.BooleanField(default=False)
+    pinned = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -114,6 +116,24 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.article.title}"
+
+class Report(models.Model):
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='reports')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('article', 'user')  # Ensure a user can only report an article once
+
+    def __str__(self):
+        return f"{self.user.username} reported {self.article.title}"
+
+class FAQ(models.Model):
+    question = models.CharField(max_length=255)
+    answer = models.TextField()
+
+    def __str__(self):
+        return self.question
 
 
 
