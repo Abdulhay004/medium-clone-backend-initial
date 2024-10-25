@@ -11,6 +11,10 @@ from .errors import BIRTH_YEAR_ERROR_MSG
 
 User = get_user_model()
 
+class UserSerializer2(serializers.ModelSerializer):
+    class Meta:
+        fields = ['id', 'username', 'email']
+
 
 class UserSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(required=True, min_length=1)
@@ -162,9 +166,3 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ['id', 'message', 'read_at', 'created_at']
-
-
-class UserSerializer2(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'middle_name', 'email', 'avatar']

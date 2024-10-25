@@ -16,6 +16,4 @@ urlpatterns = [
     path('<int:id>/follow/', views.AuthorFollowView.as_view(), name='author_follow'),
     path('followers/', views.FollowersListView.as_view(), name='following-list'),
     path('following/', views.FollowingListView.as_view(), name='following-list'),
-    path('notifications/', views.UserNotificationView.as_view(), name='user-notifications'),
-    path('notifications/<int:pk>/', views.UserNotificationDetailView.as_view(), name='user-notification-detail'),
 ]
