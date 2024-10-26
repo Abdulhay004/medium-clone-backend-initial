@@ -51,10 +51,10 @@ class CustomUser(AbstractUser):
         super().save(*args, **kwargs)
 
     class Meta:
-        db_table = "user"
+        db_table = "user"  # database table name
         verbose_name = "User"
         verbose_name_plural = "Users"
-        ordering = ["-date_joined"]
+        ordering = ["-date_joined"]  # descending order by date joined
 
         # Composite Index va Hash Index qo'shish
         indexes = [
@@ -80,7 +80,6 @@ class CustomUser(AbstractUser):
             return self.full_name
         else:
             return self.email or self.username
-
 
     @property
     def full_name(self):
