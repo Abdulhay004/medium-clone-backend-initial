@@ -9,7 +9,7 @@ on:
       github_feedback_id:
         description: 'Github feedback id'
         required: true
-        
+
 jobs:
   deploy:
     name: Deploy and run tests
