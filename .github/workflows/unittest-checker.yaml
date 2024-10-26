@@ -1,4 +1,3 @@
-
 name: Medium Clone Project CI/CD
 on:
   workflow_dispatch:
@@ -98,8 +97,5 @@ jobs:
           --header 'X-API-KEY: ${{ secrets.X_API_KEY }}' \
           --form 'github_username=${{ github.actor }}' \
           --form 'action_run_id=${{ github.run_id }}' \
-          --form "status=$status"
-          
-          
-          
+          --form "status=$status"                  
           
