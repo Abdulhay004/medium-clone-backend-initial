@@ -42,7 +42,7 @@ urlpatterns = [
     path('', lambda _: JsonResponse({'detail': 'Healthy'}), name='health'),
     path('users/', include('users.urls')),
     path('articles/', include('articles.urls')),
-    path('schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('schema/', user_passes_test(is_superuser)(SpectacularAPIView.as_view()), name='schema'),
     path('swagger/', user_passes_test(is_superuser)(SpectacularSwaggerView.as_view()), name='swagger-ui'),
     path('redoc/', user_passes_test(is_superuser)(SpectacularRedocView.as_view()), name='redoc'),
     path('api-token-auth/', obtain_auth_token),
