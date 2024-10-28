@@ -14,7 +14,7 @@ User = get_user_model()
 
 class UserSerializer2(serializers.ModelSerializer):
     class Meta:
-        model = apps.get_model('users', 'CustomUser')
+        model = User
         fields = ['id', 'username', 'email']
 
 
@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
     last_name = serializers.CharField(required=True, min_length=1)
 
     class Meta:
-        model = apps.get_model('users', 'CustomUser')
+        model = User
         fields = ['id', 'username', 'first_name', 'last_name', 'middle_name', 'email', 'avatar', 'password']
         extra_kwargs = {'password': {'write_only': True}}
 
