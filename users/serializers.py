@@ -3,6 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
+from django.apps import apps
 from django.core.exceptions import ValidationError
 from .models import Recommendation, Follow, Notification, CustomUser
 from articles.models import Article
@@ -13,6 +14,7 @@ User = get_user_model()
 
 class UserSerializer2(serializers.ModelSerializer):
     class Meta:
+        model = apps.get_model('users', 'CustomUser')
         fields = ['id', 'username', 'email']
 
 
@@ -21,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
     last_name = serializers.CharField(required=True, min_length=1)
 
     class Meta:
-        model = User
+        model = apps.get_model('users', 'CustomUser')
         fields = ['id', 'username', 'first_name', 'last_name', 'middle_name', 'email', 'avatar', 'password']
         extra_kwargs = {'password': {'write_only': True}}
 
