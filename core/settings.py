@@ -124,7 +124,7 @@ TEMPLATES = [
 
 from datetime import timedelta, datetime
 
-BIRTH_YEAR_MIN = 12
+BIRTH_YEAR_MIN = 1900
 BIRTH_YEAR_MAX = datetime.now().year
 
 REST_FRAMEWORK = {

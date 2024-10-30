@@ -14,7 +14,7 @@ User = get_user_model()
 
 class UserSerializer2(serializers.ModelSerializer):
     class Meta:
-        model = apps.get_model('users', 'CustomUser')
+        model = User
         fields = ['id', 'username', 'email']
 
 
@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
     last_name = serializers.CharField(required=True, min_length=1)
 
     class Meta:
-        model = apps.get_model('users', 'CustomUser')
+        model = User
         fields = ['id', 'username', 'first_name', 'last_name', 'middle_name', 'email', 'avatar', 'password']
         extra_kwargs = {'password': {'write_only': True}}
 
@@ -39,6 +39,18 @@ class UserSerializer(serializers.ModelSerializer):
         user.avatar = validated_data.get('avatar', '')
         user.save()
         return user
+
+    def validate_birth_year(self, value):    # tug'ilgan yil oralig'ini tekshirish uchun to'rtinchi variant
+        if not (settings.BIRTH_YEAR_MIN < value < settings.BIRTH_YEAR_MAX):
+            raise serializers.ValidationError(BIRTH_YEAR_ERROR_MSG)
+        return value
+
+    def validate(self, data):                # tug'ilgan yil oralig'ini tekshirish uchun beshinchi variant
+        birth_year = data.get('birth_year')
+        if birth_year is not None:
+            if not (settings.BIRTH_YEAR_MIN < birth_year < settings.BIRTH_YEAR_MAX):
+                raise serializers.ValidationError({"birth_year": BIRTH_YEAR_ERROR_MSG})
+        return data
 
 
 class LoginSerializer(serializers.Serializer):  # user login uchun [serializer](<http://serializers.py>) klasi

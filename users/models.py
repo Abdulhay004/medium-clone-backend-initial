@@ -33,13 +33,14 @@ class CustomUser(AbstractUser):
     avatar = ResizedImageField(size=[300, 300], crop=['top', 'left'], upload_to=file_upload, blank=True)
 
     birth_year = models.IntegerField(
-        validators=[  # tug'ilgan yil oralig'ini tekshirish uchun birinchi variant
-            validators.MinValueValidator(settings.BIRTH_YEAR_MIN),
-            validators.MaxValueValidator(settings.BIRTH_YEAR_MAX)
-        ],
-        null=True,
-        blank=True
-    )
+		        validators=[  # tug'ilgan yil oralig'ini tekshirish uchun birinchi variant
+		            validators.MinValueValidator(settings.BIRTH_YEAR_MIN),
+		            validators.MaxValueValidator(settings.BIRTH_YEAR_MAX)
+		        ],
+		        null=True,
+		        blank=True
+		)
+
 
     def clean(self):  # tug'ilgan yil oralig'ini tekshirish uchun ikkinchi variant
         super().clean()
