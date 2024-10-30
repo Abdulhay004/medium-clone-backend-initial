@@ -1,0 +1,2 @@
+msgid "Kirish ma'lumotlari yaroqsiz"
+msgstr "Invalid login information"
