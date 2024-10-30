@@ -258,13 +258,13 @@ class CommentsView(viewsets.ModelViewSet):
                             status=status.HTTP_404_NOT_FOUND)
 #
 class ArticleDetailCommentsView(APIView):
-    serializer_class = ArticleDetailCommentsSerializer
+    # serializer_class = ArticleDetailCommentsSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, article_id):
+    def get(self, request, id):
         try:
             # Fetch the article by ID
-            article = Article.objects.get(id=article_id)
+            article = Article.objects.get(id=id)
             # Fetch comments related to the article
             comments = Comment.objects.filter(article=article)
             # Serialize the comments

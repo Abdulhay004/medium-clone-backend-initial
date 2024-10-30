@@ -45,9 +45,9 @@ urlpatterns = [
     path('schema/', user_passes_test(is_superuser)(SpectacularAPIView.as_view()), name='schema'),
     path('swagger/', user_passes_test(is_superuser)(SpectacularSwaggerView.as_view()), name='swagger-ui'),
     path('redoc/', user_passes_test(is_superuser)(SpectacularRedocView.as_view()), name='redoc'),
-    path('api-token-auth/', obtain_auth_token),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # path('api-token-auth/', obtain_auth_token),
+    # path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

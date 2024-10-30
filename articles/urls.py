@@ -15,11 +15,9 @@ router2.register('comments', CommentsView)
 urlpatterns = [
     path('<int:article_id>/clap/', ClapView.as_view(), name='clap'),
     path('<int:article_id>/favorite/', FavoriteArticleView.as_view(), name='favorite-article'),
-    path('<int:article_id>/detail/comments/', ArticleDetailCommentsView.as_view(), name='article-detail-comments'),
+    path('<int:id>/detail/comments/', ArticleDetailCommentsView.as_view(), name='article-detail-comments'),
     path('<int:id>/comments/', CreateCommentsView.as_view(), name='create-article-comments'),
     path('topics/<int:id>/follow/', TopicFollowView.as_view(), name='topic-follow'),
-    # path('<int:id>/archive/', ArticlesView.as_view({'get': 'list'})),
-    # path('<int:id>/pin/', ArticlesView.as_view({'post': 'post'})),
     path('<int:id>/unpin/', ArticlesView.as_view({'post': 'post'})),
     path('<int:id>/archive/', lambda request, id: ArticlesView.as_view({'get': 'list'})(request, id=id, action='archive')),
     path('<int:id>/pin/', lambda request, id: ArticlesView.as_view({'get': 'list'})(request, id=id, action='pin')),
