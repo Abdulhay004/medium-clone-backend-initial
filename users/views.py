@@ -9,6 +9,7 @@ from rest_framework.authentication import TokenAuthentication
 from django.utils import timezone
 from .models import CustomUser, Author, Follow, Notification
 from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import Article, Recommendation, ArticleStatus
 
 from rest_framework import status, permissions, parsers, exceptions, generics
 from rest_framework.generics import ListAPIView
@@ -295,7 +296,6 @@ class ResetPasswordView(generics.UpdateAPIView):
         redis_conn.delete(token_hash)
         return Response(tokens)
 
-from .models import Article, Recommendation, ArticleStatus
 class RecommendationView(APIView):
     serializer_class = RecommendationSerializer
     permission_classes = [IsAuthenticated]

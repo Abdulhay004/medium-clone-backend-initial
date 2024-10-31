@@ -1,3 +1,4 @@
+
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
@@ -164,12 +165,14 @@ class RecommendationSerializer(serializers.ModelSerializer):
         fields = ['more_article_id', 'less_article_id']
 
     def validate(self, attrs):
-        # You can add custom validation logic here if needed
         more_article_id = attrs.get('more_article_id')
         less_article_id = attrs.get('less_article_id')
 
         if more_article_id is None and less_article_id is None:
             raise serializers.ValidationError("At least one of 'more_article_id' or 'less_article_id' must be provided.")
+
+        # Return the validated attributes
+        return attrs
 
 class FollowSerializer(serializers.ModelSerializer):
     class Meta:
