@@ -34,15 +34,15 @@ class TopicFollow(models.Model):
 class Article(models.Model):
     title = models.CharField(max_length=200)
     author = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='article_set')
-    summary = models.TextField()
-    content = models.TextField()
-    slug = models.SlugField(unique=True, blank=True)
+    summary = models.TextField(max_length=500)
+    content = models.TextField(max_length=500)
+    slug = models.SlugField(max_length=100, unique=True, blank=True)
     STATUS_CHOICES = [
         ('active', 'ACTIVE'),
         ('trash', 'TRASH'),
     ]
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
-    thumbnail = models.ImageField(upload_to='articles/thumbnails/', null=True)
+    thumbnail = models.ImageField(max_length=500, upload_to='articles/thumbnails/', null=True)
     views_count = models.IntegerField(default=0)
     reads_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
