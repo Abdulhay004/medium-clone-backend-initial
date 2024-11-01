@@ -1,0 +1,35 @@
+Ushbu kurs sizni zamonaviy blog platforma yaratish uchun zarur bo‘lgan dasturiy bilim va amaliy tajribalarni oʻzlashtirishga yordam berdi deb umid qilamiz.
+
+Medium klon loyihasi davomida egallangan Asosiy Bilimlar va Texnologiyalar
+
+Redis
+
+Keshlash va asinxron jarayonlarni amalga oshirish uchun Redis’dan foydalanish.
+
+Django ORM (Object-Relational Mapping)
+
+Django ORM orqali ma'lumotlar bazasi bilan ishlash, jadvallar yaratish va ularga CRUD (yaratish, o‘qish, yangilash, o‘chirish) amallarini bajarish.
+
+Django Rest Framework (DRF)
+
+RESTful API yaratishda asosiy texnologiya sifatida DRF’dan foydalanish.
+
+PostgreSQL
+
+Loyihaning asosiy ma'lumotlar bazasi sifatida PostgreSQL’dan foydalanish.
+
+Email Xizmatlari
+
+Foydalanuvchilarni autentifikatsiya qilish va yangilanishlarni bildirish uchun email xizmatlarini sozlash va yuborish.
+
+Docker
+
+Docker orqali loyihalarni konteynerizatsiya qilish. Docker yordamida loyihalarni bir xil muhitda ishlab chiqish va joylashtirish.
+
+JWT (JSON Web Token)
+
+Autentifikatsiya jarayonida JWT yordamida foydalanuvchilarni xavfsiz va ishonchli tarzda identifikatsiya qilish.
+
+Kursni oʻqish davomida zamonaviy blog platformalarini yaratishda kerakli boʻlgan bekend texnologiyalari va amaliy koʻnikmalarga ega boʻldingiz, deb umid qilamiz. Endi siz mustaqil ravishda Ghost, WordPress kabi onlayn blog platformalarini yaratishga tayyorsiz.
+
+Sizni oldinda yanada qiziqarli va murakkab loyihalar kutmoqda. Har bir loyihada yangi bilim va koʻnikmalar orttirib, professional boʻlib, oʻsib borasiz.
